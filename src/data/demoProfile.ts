@@ -1,0 +1,45 @@
+import type { Profile } from '../store/profile';
+import { emptyProfile } from '../store/profile';
+
+/** Fictitious, fully onboarded borrower used by the "Demo login" shortcut. */
+export const DEMO_MOBILE = '9999999999';
+
+export const DEMO_PROFILE: Profile = {
+  ...emptyProfile,
+  fullName: 'Ramesh Kumar Gupta',
+  dob: '1985-06-14',
+  gender: 'male',
+  pan: 'ABCPG1234K',
+  aadhaarLast4: '1234',
+  aadhaarVerified: true,
+  email: 'ramesh.demo@example.com',
+  address: '14, Station Road, Near Hanuman Mandir',
+  pin: '342001',
+  city: 'Jodhpur',
+  state: 'Rajasthan',
+  residenceType: 'owned',
+  yearsAtAddress: '9',
+  occupation: 'business',
+  monthlyIncome: '45000',
+  existingEmi: '8000',
+  dependants: '3',
+  businessName: 'Shree Ganesh Kirana',
+  constitution: 'Proprietorship',
+  udyam: 'UDYAM-RJ-17-0012345',
+  gstin: '08ABCPG1234K1Z5',
+  gstNotRegistered: false,
+  industry: 'Kirana / general store',
+  businessAddressSame: true,
+  businessAddress: '',
+  vintage: '11',
+  turnoverBand: '₹40 L – ₹1 Cr',
+  accountHolder: 'Ramesh Kumar Gupta',
+  accountNumber: '50100123456789',
+  accountNumberConfirm: '50100123456789',
+  ifsc: 'HDFC0001234',
+  bankName: 'HDFC Bank',
+  branch: 'Ring Road',
+  accountType: 'current',
+  pennyDropVerified: true,
+  consents: { bureau: true, aa: true, camera: true, india: true, terms: true },
+};

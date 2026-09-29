@@ -93,6 +93,8 @@ interface ProfileState {
   update: (mobile: string, patch: Partial<Profile>) => void;
   setStep: (mobile: string, step: number) => void;
   complete: (mobile: string) => void;
+  /** Replace a profile wholesale and mark onboarding complete (demo login). */
+  seed: (mobile: string, profile: Profile) => void;
 }
 
 const entry = (s: ProfileState, m: string) => s.byMobile[m] ?? { profile: emptyProfile, step: 0, complete: false };
@@ -108,6 +110,7 @@ export const useProfileStore = create<ProfileState>()(
         }),
       setStep: (m, step) => set((s) => ({ byMobile: { ...s.byMobile, [m]: { ...entry(s, m), step } } })),
       complete: (m) => set((s) => ({ byMobile: { ...s.byMobile, [m]: { ...entry(s, m), complete: true } } })),
+      seed: (m, profile) => set((s) => ({ byMobile: { ...s.byMobile, [m]: { profile, step: 4, complete: true } } })),
     }),
     { name: `${LS_PREFIX}profile` },
   ),

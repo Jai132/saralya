@@ -1,16 +1,28 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquareText } from 'lucide-react';
+import { MessageSquareText, Zap } from 'lucide-react';
 import { BorrowerPage } from './BorrowerLayout';
 import { BottomBar, Button, TextField } from '../../components/ui';
 import { DEMO_OTP, useAuth } from '../../store/auth';
 import { useProfileStore } from '../../store/profile';
 import { digits, v } from '../../lib/validate';
+import { useApplications } from '../../store/application';
+import { DEMO_MOBILE, DEMO_PROFILE } from '../../data/demoProfile';
 
 export default function Login() {
   const nav = useNavigate();
   const { login, registered } = useAuth();
   const byMobile = useProfileStore((s) => s.byMobile);
+  const seedProfile = useProfileStore((s) => s.seed);
+  const clearApp = useApplications((s) => s.clear);
+
+  // Skips sign-up and onboarding with a fictitious, fully filled profile; starts a fresh application.
+  const demoLogin = () => {
+    seedProfile(DEMO_MOBILE, DEMO_PROFILE);
+    clearApp(DEMO_MOBILE);
+    login(DEMO_MOBILE);
+    nav('/b/loan', { replace: true });
+  };
   const [stage, setStage] = useState<'mobile' | 'otp'>('mobile');
   const [mobile, setMobile] = useState('');
   const [otp, setOtp] = useState('');
@@ -71,6 +83,18 @@ export default function Login() {
               onKeyDown={(e) => e.key === 'Enter' && sendOtp()}
               autoFocus
             />
+            <div className="mt-2 rounded-2xl border border-dashed border-teal/40 bg-teal-tint p-4">
+              <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-navy">
+                <Zap className="h-4 w-4 text-teal" /> Demo shortcut
+              </div>
+              <p className="mb-3 text-xs text-ink-soft">
+                Sign in as a pre-filled borrower (Ramesh Kumar Gupta, +91 99999 99999) and go straight to choosing a loan. Starts a fresh
+                application each time.
+              </p>
+              <Button variant="secondary" block onClick={demoLogin} icon={<Zap className="h-4 w-4" />}>
+                Demo login — skip the forms
+              </Button>
+            </div>
           </>
         ) : (
           <>
