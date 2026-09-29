@@ -8,6 +8,7 @@ import Onboarding from './screens/borrower/Onboarding';
 import LoanSelect from './screens/borrower/LoanSelect';
 import InspectConsent from './screens/borrower/InspectConsent';
 import Home from './screens/borrower/Home';
+import InspectRunner from './screens/borrower/InspectRunner';
 
 export default function AppRoutes() {
   return (
@@ -19,7 +20,7 @@ export default function AppRoutes() {
       <Route path="/b/onboarding" element={<Onboarding />} />
       <Route path="/b/loan" element={<LoanSelect />} />
       <Route path="/b/inspect" element={<InspectConsent />} />
-      <Route path="/b/inspect/:product" element={<Placeholder title="Guided capture" />} />
+      <Route path="/b/inspect/:product" element={<InspectRunner />} />
       <Route path="/b/home" element={<Home />} />
       <Route path="/lender/*" element={<Placeholder title="Lender console" />} />
       <Route path="*" element={<Navigate to="/" replace />} />

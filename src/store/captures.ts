@@ -18,6 +18,8 @@ export interface CaptureMeta {
   sharpness: number;
   width: number;
   height: number;
+  /** SHA-256 of the JPEG bytes (or of the metadata snapshot when no frame was available). */
+  imageHash: string;
   hash: string;
   prevHash: string;
   /** IndexedDB key for the JPEG, if a frame was available. */

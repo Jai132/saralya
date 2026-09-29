@@ -23,10 +23,16 @@ export default {
       keyframes: {
         fadeUp: { from: { opacity: '0', transform: 'translateY(6px)' }, to: { opacity: '1', transform: 'none' } },
         pulseDot: { '0%,100%': { opacity: '1' }, '50%': { opacity: '0.3' } },
+        shake: { '0%,100%': { transform: 'none' }, '20%,60%': { transform: 'translateX(-6px)' }, '40%,80%': { transform: 'translateX(6px)' } },
+        flash: { from: { opacity: '0.85' }, to: { opacity: '0' } },
+        toast: { '0%': { opacity: '0', transform: 'translateY(8px)' }, '12%,80%': { opacity: '1', transform: 'none' }, '100%': { opacity: '0' } },
       },
       animation: {
         fadeUp: 'fadeUp .35s ease-out both',
         pulseDot: 'pulseDot 1.2s ease-in-out infinite',
+        flash: 'flash .45s ease-out forwards',
+        shake: 'shake .35s ease',
+        toast: 'toast 2.2s ease forwards',
       },
     },
   },

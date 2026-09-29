@@ -44,7 +44,7 @@ export function TextField({ label, hint, error, value, onChange, upper, prefix, 
         {prefix && <span className="pointer-events-none absolute left-3.5 text-[15px] text-ink-soft">{prefix}</span>}
         <input
           id={id}
-          className={`field-input ${prefix ? 'pl-10' : ''} ${suffix ? 'pr-24' : ''}`}
+          className={`field-input ${prefix ? 'pl-12' : ''} ${suffix ? 'pr-24' : ''}`}
           value={value}
           aria-invalid={!!error}
           onChange={(e) => onChange(upper ? e.target.value.toUpperCase() : e.target.value)}
