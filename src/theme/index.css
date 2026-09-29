@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-serif text-navy;
+  }
+  input,
+  select,
+  textarea {
+    @apply text-base;
+  }
+}
+
+@layer components {
+  .field-input {
+    @apply w-full rounded-xl border border-line bg-white px-3.5 py-3 text-[15px] text-ink outline-none transition
+      placeholder:text-ink-faint focus:border-teal focus:ring-2 focus:ring-teal/20;
+  }
+  .field-input[aria-invalid='true'] {
+    @apply border-danger focus:border-danger focus:ring-danger/20;
+  }
+  .hud-glass {
+    @apply bg-navy/60 text-white backdrop-blur-md;
+  }
+}
+
+/* Leaflet needs a height on its container; keep attribution legible but small. */
+.leaflet-container {
+  font-family: Inter, system-ui, sans-serif;
+}
+.leaflet-control-attribution {
+  font-size: 9px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

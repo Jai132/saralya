@@ -1,0 +1,8 @@
+node_modules
+dist
+*.local
+.DS_Store
+*.tsbuildinfo
+
+# Research material is reference-only; kept out of the (public) repo by default
+docs/
