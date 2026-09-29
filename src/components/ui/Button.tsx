@@ -47,8 +47,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 /** Sticky bottom action bar for mobile screens. */
 export function BottomBar({ children }: { children: ReactNode }) {
   return (
-    <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-line bg-white/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur">
-      {children}
-    </div>
+    <>
+      <div className="h-6 shrink-0" />
+      <div className="sticky bottom-0 z-20 -mx-4 mt-auto border-t border-line bg-white/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur">
+        {children}
+      </div>
+    </>
   );
 }

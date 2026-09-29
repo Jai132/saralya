@@ -2,13 +2,25 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import Landing from './screens/Landing';
 import CameraCheck from './screens/CameraCheck';
 import Placeholder from './screens/Placeholder';
+import BorrowerIndex from './screens/borrower/BorrowerIndex';
+import Login from './screens/borrower/Login';
+import Onboarding from './screens/borrower/Onboarding';
+import LoanSelect from './screens/borrower/LoanSelect';
+import InspectConsent from './screens/borrower/InspectConsent';
+import Home from './screens/borrower/Home';
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/camera-check" element={<CameraCheck />} />
-      <Route path="/b/*" element={<Placeholder title="Borrower app" />} />
+      <Route path="/b" element={<BorrowerIndex />} />
+      <Route path="/b/login" element={<Login />} />
+      <Route path="/b/onboarding" element={<Onboarding />} />
+      <Route path="/b/loan" element={<LoanSelect />} />
+      <Route path="/b/inspect" element={<InspectConsent />} />
+      <Route path="/b/inspect/:product" element={<Placeholder title="Guided capture" />} />
+      <Route path="/b/home" element={<Home />} />
       <Route path="/lender/*" element={<Placeholder title="Lender console" />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
