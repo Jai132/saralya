@@ -1,0 +1,80 @@
+{
+  "id": "cv-door-l",
+  "vehicleClass": "cv",
+  "part": "Cabin left door",
+  "widthMm": 900,
+  "heightMm": 1300,
+  "planar": true,
+  "outline": "M30 0H870Q900 0 900 30V1270Q900 1300 870 1300H30Q0 1300 0 1270V30Q0 0 30 0Z M162 70.2L846 70.2L846 538.2L54 538.2Z",
+  "zones": [
+    {
+      "id": "window",
+      "label": "Window frame",
+      "rect": [
+        0,
+        0,
+        900,
+        585
+      ]
+    },
+    {
+      "id": "upper",
+      "label": "Upper panel",
+      "rect": [
+        0,
+        585,
+        900,
+        250.24999999999997
+      ]
+    },
+    {
+      "id": "handle",
+      "label": "Handle area",
+      "rect": [
+        558,
+        670.8,
+        270,
+        157.3
+      ]
+    },
+    {
+      "id": "lower",
+      "label": "Lower panel",
+      "rect": [
+        0,
+        835.25,
+        900,
+        357.5
+      ]
+    },
+    {
+      "id": "sill",
+      "label": "Sill",
+      "rect": [
+        0,
+        1192.75,
+        900,
+        107.25
+      ]
+    }
+  ],
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      900,
+      0
+    ],
+    [
+      900,
+      1300
+    ],
+    [
+      0,
+      1300
+    ]
+  ],
+  "illustrative": true
+}

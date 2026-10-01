@@ -1,0 +1,60 @@
+{
+  "id": "car-roof",
+  "vehicleClass": "car",
+  "part": "Roof",
+  "widthMm": 1200,
+  "heightMm": 1300,
+  "planar": true,
+  "outline": "M120 0H1080Q1200 0 1200 120V1180Q1200 1300 1080 1300H120Q0 1300 0 1180V120Q0 0 120 0Z",
+  "zones": [
+    {
+      "id": "front",
+      "label": "Front third",
+      "rect": [
+        0,
+        0,
+        1200,
+        430
+      ]
+    },
+    {
+      "id": "mid",
+      "label": "Middle third",
+      "rect": [
+        0,
+        430,
+        1200,
+        440
+      ]
+    },
+    {
+      "id": "rear",
+      "label": "Rear third",
+      "rect": [
+        0,
+        870,
+        1200,
+        430
+      ]
+    }
+  ],
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      1200,
+      0
+    ],
+    [
+      1200,
+      1300
+    ],
+    [
+      0,
+      1300
+    ]
+  ],
+  "illustrative": true
+}

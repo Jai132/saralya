@@ -1,0 +1,70 @@
+{
+  "id": "car-bonnet",
+  "vehicleClass": "car",
+  "part": "Bonnet",
+  "widthMm": 1400,
+  "heightMm": 1000,
+  "planar": true,
+  "outline": "M150 0H1250Q1400 0 1400 120V880Q1400 1000 1250 1000H150Q0 1000 0 880V120Q0 0 150 0Z M200 120L1200 120",
+  "zones": [
+    {
+      "id": "leading",
+      "label": "Leading edge",
+      "rect": [
+        0,
+        820,
+        1400,
+        180
+      ]
+    },
+    {
+      "id": "centre",
+      "label": "Centre",
+      "rect": [
+        250,
+        250,
+        900,
+        570
+      ]
+    },
+    {
+      "id": "left",
+      "label": "Left edge",
+      "rect": [
+        0,
+        0,
+        250,
+        1000
+      ]
+    },
+    {
+      "id": "right",
+      "label": "Right edge",
+      "rect": [
+        1150,
+        0,
+        250,
+        1000
+      ]
+    }
+  ],
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      1400,
+      0
+    ],
+    [
+      1400,
+      1000
+    ],
+    [
+      0,
+      1000
+    ]
+  ],
+  "illustrative": true
+}

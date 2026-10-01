@@ -11,18 +11,22 @@ import {
   rng,
   sackTexture,
   sideWindowTexture,
+  stampTexture,
+  clusterTexture,
   signTexture,
   tileTexture,
   tyreTexture,
   wallTexture,
   woodTexture,
 } from './demoTextures';
-import type { DemoVariant } from './types';
+import { GHOST_BOX, type DemoVariant } from './types';
 
 export interface DemoWorld {
   scene: THREE.Scene;
   /** Sets the camera for time t (seconds). */
   update(t: number, cam: THREE.PerspectiveCamera): void;
+  /** Point the camera at a named spot (vehicle angle or close-up) and hold; null resumes the autopilot. */
+  focus?(key: string | null): void;
 }
 
 type Mat = THREE.Material | THREE.Material[];
@@ -366,11 +370,71 @@ function yard(scene: THREE.Scene) {
   });
 }
 
-function buildTruck(): DemoWorld {
+
+// Vehicles face +z; their left side is +x (so "front-¾ left" is the +x,+z quadrant).
+
+interface Spot {
+  pos: THREE.Vector3;
+  target: THREE.Vector3;
+}
+
+interface VehicleSpec {
+  scene: THREE.Scene;
+  /** Axis-aligned bounds of the vehicle in metres, used to frame it into the ghost-outline box. */
+  min: THREE.Vector3;
+  max: THREE.Vector3;
+  spots: Record<string, Spot>;
+}
+
+const v3 = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+
+/** A stamped-steel patch carrying the chassis number, so close-ups have something to read. */
+function chassisStamp(parent: THREE.Object3D, text: string, pos: [number, number, number], rotY: number) {
+  plane(parent, 0.32, 0.07, std({ map: stampTexture(text), roughness: 0.5, metalness: 0.4 }), pos, [0, rotY, 0]);
+}
+
+type CvStyle = 'tipper' | 'truck' | 'pickup';
+
+function buildCv(style: CvStyle): DemoWorld {
   const scene = new THREE.Scene();
   yard(scene);
   const g = new THREE.Group();
   scene.add(g);
+  const plate = 'RJ 19 GA 4821';
+  const tail = std({ color: 0xdc2626, emissive: 0x991b1b, emissiveIntensity: 0.5 });
+  const spots: Record<string, Spot> = {};
+
+  if (style === 'pickup') {
+    const cabColor = '#e5e7eb';
+    const cab = std({ color: cabColor });
+    const front = std({ map: grilleTexture(cabColor) });
+    const side = std({ map: sideWindowTexture(cabColor) });
+    box(g, 1.76, 1.0, 1.4, [side, side, cab, cab, std({ map: glassTexture() }), cab], 0, 1.45, 1.5);
+    box(g, 1.76, 0.55, 0.75, [cab, cab, cab, cab, front, cab], 0, 0.88, 2.55);
+    box(g, 1.8, 0.4, 5.0, std({ color: 0x374151 }), 0, 0.6, 0.35);
+    const bed = std({ map: tileTexture('#cbd5e1', '#b8c2cf', 6, [1, 1]) });
+    box(g, 0.06, 0.5, 3.0, bed, -0.87, 1.05, -0.7);
+    box(g, 0.06, 0.5, 3.0, bed, 0.87, 1.05, -0.7);
+    box(g, 1.76, 0.5, 0.06, bed, 0, 1.05, -2.2);
+    box(g, 1.8, 0.18, 0.18, std({ color: 0x111827 }), 0, 0.5, 2.95);
+    plane(g, 0.5, 0.11, std({ map: plateTexture(plate) }), [0, 0.52, 3.05], [0, 0, 0]);
+    plane(g, 0.5, 0.11, std({ map: plateTexture(plate) }), [0, 0.6, -2.24], [0, Math.PI, 0]);
+    box(g, 0.2, 0.12, 0.04, tail, -0.75, 0.95, -2.24);
+    box(g, 0.2, 0.12, 0.04, tail, 0.75, 0.95, -2.24);
+    for (const z of [1.95, -1.45]) {
+      wheel(g, 0.38, 0.26, -0.9, 0.38, z);
+      wheel(g, 0.38, 0.26, 0.9, 0.38, z);
+    }
+    chassisStamp(g, 'MA7PK1XXXXXX55301', [0.905, 0.62, 1.2], Math.PI / 2);
+    plane(g, 0.5, 0.25, std({ map: clusterTexture('110400'), emissive: 0xffffff, emissiveIntensity: 0.25 }), [0.885, 1.62, 1.6], [0, Math.PI / 2, 0]);
+    spots.plate = { pos: v3(0, 0.62, 4.0), target: v3(0, 0.52, 3.05) };
+    spots.chassis = { pos: v3(1.38, 0.66, 1.2), target: v3(0.9, 0.62, 1.2) };
+    spots.engine = { pos: v3(0, 2.1, 4.2), target: v3(0, 1.05, 2.6) };
+    spots.odo = { pos: v3(1.55, 1.64, 1.6), target: v3(0.88, 1.62, 1.6) };
+    spots.tyre = { pos: v3(1.9, 0.6, 2.35), target: v3(0.9, 0.38, 1.95) };
+    return orbit({ scene, min: v3(-0.92, 0, -2.3), max: v3(0.92, 1.95, 3.05), spots });
+  }
+
   const cabColor = '#e0a526';
   const cab = std({ color: cabColor });
   const cabFront = std({ map: grilleTexture(cabColor) });
@@ -379,24 +443,37 @@ function buildTruck(): DemoWorld {
   box(g, 2.3, 2.0, 1.8, [cabSide, cabSide, cab, cab, cabFront, cab], 0, 1.95, 2.3);
   box(g, 1.0, 0.25, 6.2, std({ color: 0x1f2937 }), 0, 0.75, 0);
   box(g, 2.45, 0.28, 0.25, std({ color: 0x374151 }), 0, 0.95, 3.25);
-  plane(g, 0.55, 0.12, std({ map: plateTexture('RJ 19 GA 4821') }), [0, 0.95, 3.38], [0, 0, 0]);
-  // Tipper body with ribbed sides.
-  const bodyMat = std({ map: tileTexture('#9a3412', '#7c2d12', 8, [1, 1]) });
-  box(g, 2.4, 0.15, 3.9, bodyMat, 0, 1.2, -0.75);
-  box(g, 0.1, 1.1, 3.9, bodyMat, -1.18, 1.8, -0.75);
-  box(g, 0.1, 1.1, 3.9, bodyMat, 1.18, 1.8, -0.75);
-  box(g, 2.4, 1.1, 0.1, bodyMat, 0, 1.8, -2.7);
-  box(g, 2.4, 1.3, 0.1, bodyMat, 0, 1.9, 1.2);
-  plane(g, 0.55, 0.12, std({ map: plateTexture('RJ 19 GA 4821') }), [0, 1.0, -2.76], [0, Math.PI, 0]);
-  const tail = std({ color: 0xdc2626, emissive: 0x991b1b, emissiveIntensity: 0.5 });
-  box(g, 0.25, 0.12, 0.05, tail, -0.95, 1.0, -2.76);
-  box(g, 0.25, 0.12, 0.05, tail, 0.95, 1.0, -2.76);
+  plane(g, 0.55, 0.12, std({ map: plateTexture(plate) }), [0, 0.95, 3.38], [0, 0, 0]);
+
+  if (style === 'tipper') {
+    const bodyMat = std({ map: tileTexture('#9a3412', '#7c2d12', 8, [1, 1]) });
+    box(g, 2.4, 0.15, 3.9, bodyMat, 0, 1.2, -0.75);
+    box(g, 0.1, 1.1, 3.9, bodyMat, -1.18, 1.8, -0.75);
+    box(g, 0.1, 1.1, 3.9, bodyMat, 1.18, 1.8, -0.75);
+    box(g, 2.4, 1.1, 0.1, bodyMat, 0, 1.8, -2.7);
+    box(g, 2.4, 1.3, 0.1, bodyMat, 0, 1.9, 1.2);
+  } else {
+    const panel = std({ map: tileTexture('#64748b', '#5b6b80', 4, [3, 1]) });
+    const rear = std({ map: tileTexture('#475569', '#3f4c5f', 2, [1, 1]) });
+    box(g, 2.44, 2.3, 4.9, [panel, panel, panel, panel, panel, rear], 0, 2.25, -0.65);
+  }
+  plane(g, 0.55, 0.12, std({ map: plateTexture(plate) }), [0, 1.0, -2.76 - (style === 'truck' ? 0.36 : 0)], [0, Math.PI, 0]);
+  box(g, 0.25, 0.12, 0.05, tail, -0.95, 1.0, -2.76 - (style === 'truck' ? 0.36 : 0));
+  box(g, 0.25, 0.12, 0.05, tail, 0.95, 1.0, -2.76 - (style === 'truck' ? 0.36 : 0));
   for (const z of [2.2, -0.9, -2.0]) {
     wheel(g, 0.52, 0.36, -1.05, 0.52, z);
     wheel(g, 0.52, 0.36, 1.05, 0.52, z);
   }
   box(g, 0.5, 0.35, 0.8, std({ color: 0x111827 }), -0.8, 1.0, 0.6);
-  return orbit(scene, 7.8, 1.7, new THREE.Vector3(0, 1.3, 0));
+  // Chassis number stamped on the left frame rail, just behind the front wheel.
+  chassisStamp(g, style === 'tipper' ? 'MA7RK2XXXXXX45812' : 'MA7HM9XXXXXX18426', [0.505, 0.75, 1.15], Math.PI / 2);
+  plane(g, 0.6, 0.3, std({ map: clusterTexture(style === 'tipper' ? '320600' : '090120'), emissive: 0xffffff, emissiveIntensity: 0.25 }), [1.16, 2.45, 2.35], [0, Math.PI / 2, 0]);
+  spots.plate = { pos: v3(0, 1.05, 4.5), target: v3(0, 0.95, 3.38) };
+  spots.chassis = { pos: v3(0.98, 0.78, 1.15), target: v3(0.5, 0.75, 1.15) };
+  spots.engine = { pos: v3(0.2, 2.4, 5.0), target: v3(0, 1.5, 3.2) };
+  spots.odo = { pos: v3(1.95, 2.5, 2.35), target: v3(1.16, 2.45, 2.35) };
+  spots.tyre = { pos: v3(2.3, 0.8, 2.7), target: v3(1.05, 0.52, 2.2) };
+  return orbit({ scene, min: v3(-1.22, 0, style === 'truck' ? -3.12 : -2.78), max: v3(1.22, style === 'truck' ? 3.4 : 2.95, 3.4), spots });
 }
 
 function buildCar(): DemoWorld {
@@ -425,19 +502,101 @@ function buildCar(): DemoWorld {
     wheel(g, 0.33, 0.24, -0.8, 0.33, z);
     wheel(g, 0.33, 0.24, 0.8, 0.33, z);
   }
-  return orbit(scene, 5.6, 1.5, new THREE.Vector3(0, 0.75, 0));
+  // Chassis number stamped on the left sill below the B-pillar.
+  chassisStamp(g, 'MZ3KR2XXXXXX41187', [0.865, 0.42, 0.05], Math.PI / 2);
+  plane(g, 0.42, 0.21, std({ map: clusterTexture('048210'), emissive: 0xffffff, emissiveIntensity: 0.25 }), [0.765, 1.22, 0.45], [0, Math.PI / 2, 0]);
+  const spots: Record<string, Spot> = {
+    plate: { pos: v3(0, 0.55, 2.9), target: v3(0, 0.45, 2.09) },
+    chassis: { pos: v3(1.32, 0.46, 0.05), target: v3(0.86, 0.42, 0.05) },
+    engine: { pos: v3(0, 1.9, 3.2), target: v3(0, 0.9, 1.3) },
+    odo: { pos: v3(1.38, 1.26, 0.45), target: v3(0.765, 1.22, 0.45) },
+    tyre: { pos: v3(1.6, 0.45, 1.6), target: v3(0.8, 0.33, 1.25) },
+  };
+  return orbit({ scene, min: v3(-0.88, 0, -2.1), max: v3(0.88, 1.51, 2.1), spots });
 }
 
-function orbit(scene: THREE.Scene, radius: number, height: number, target: THREE.Vector3): DemoWorld {
+/**
+ * Orbits the vehicle. With no focus it walks the 8 angles on a loop (front → front-¾ left → left …, pausing at
+ * each). A step can focus the camera on an angle or a close-up spot, and the camera eases there and holds.
+ */
+function orbit(spec: VehicleSpec): DemoWorld {
+  const { scene, min, max, spots } = spec;
+  const centre = new THREE.Vector3().addVectors(min, max).multiplyScalar(0.5);
+  const corners = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(i & 1 ? max.x : min.x, i & 2 ? max.y : min.y, i & 4 ? max.z : min.z));
+  const ELEV = THREE.MathUtils.degToRad(6); // matches the silhouette drawings
+  let focus: string | null = null;
+  const pos = new THREE.Vector3(centre.x, centre.y + 1, centre.z + 8);
+  const tgt = centre.clone();
+  const wantPos = new THREE.Vector3();
+  const wantTgt = new THREE.Vector3();
+  let last = 0;
+
+  /** Distance from the centre at which the vehicle, seen from angle a, fills the ghost-outline box. */
+  const fitDistance = (a: number, cam: THREE.PerspectiveCamera) => {
+    const tanV = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2);
+    const tanH = tanV * cam.aspect;
+    const rx = Math.cos(a), rz = -Math.sin(a);
+    const fx = Math.sin(a), fz = Math.cos(a);
+    let r0 = Infinity, r1 = -Infinity, f0 = Infinity, f1 = -Infinity;
+    for (const c of corners) {
+      const r = (c.x - centre.x) * rx + (c.z - centre.z) * rz;
+      const f = (c.x - centre.x) * fx + (c.z - centre.z) * fz;
+      r0 = Math.min(r0, r);
+      r1 = Math.max(r1, r);
+      f0 = Math.min(f0, f);
+      f1 = Math.max(f1, f);
+    }
+    const nearFace = Math.max((r1 - r0) / (GHOST_BOX.width * 2 * tanH), (max.y - min.y) / (GHOST_BOX.height * 2 * tanV));
+    return nearFace + (f1 - f0) / 2;
+  };
+  const setAngle = (a: number, cam: THREE.PerspectiveCamera) => {
+    const d = fitDistance(a, cam);
+    wantPos.set(centre.x + Math.sin(a) * d * Math.cos(ELEV), centre.y + d * Math.sin(ELEV), centre.z + Math.cos(a) * d * Math.cos(ELEV));
+    wantTgt.copy(centre);
+  };
+
   return {
     scene,
+    focus(key) {
+      focus = key;
+    },
     update(t, cam) {
-      // Start at the front, walk counter-clockwise (front → front-¾ left → left …), pausing slightly at each 45°.
-      const u = t / 6;
-      const a = (Math.floor(u) + smooth(u - Math.floor(u))) * (Math.PI / 4) + Math.PI / 2;
-      const r = radius + Math.sin(t / 4) * 0.25;
-      cam.position.set(Math.cos(a) * r, height + Math.sin(t / 3) * 0.08, Math.sin(a) * r);
-      cam.lookAt(target);
+      const dt = Math.min(0.1, t - last);
+      last = t;
+      const m = focus?.match(/^angle-(\d)$/);
+      const base = focus && !m ? spots[focus] ?? spots[focus.replace(/-[lcr]$/, '')] : undefined;
+      if (m) setAngle((Number(m[1]) * Math.PI) / 4, cam);
+      else if (base && focus) {
+        wantPos.copy(base.pos);
+        wantTgt.copy(base.target);
+        // Torch-relief captures: shift the phone left / right of the stamp.
+        const side = focus.endsWith('-l') ? -1 : focus.endsWith('-r') ? 1 : 0;
+        if (side) {
+          const toCam = new THREE.Vector3().subVectors(base.pos, base.target);
+          wantPos.add(new THREE.Vector3(toCam.z, 0, -toCam.x).normalize().multiplyScalar(side * 0.35));
+        }
+      } else {
+        // Autopilot: walk the 8 angles, pausing at each.
+        const u = t / 6;
+        setAngle(((Math.floor(u) + smooth(u - Math.floor(u))) * Math.PI) / 4, cam);
+        pos.copy(wantPos);
+        tgt.copy(wantTgt);
+      }
+      // Ease towards the target pose; walk around the vehicle rather than through it.
+      const k = 1 - Math.exp(-dt * 2.4);
+      if (m) {
+        const cur = Math.atan2(pos.x - centre.x, pos.z - centre.z);
+        const want = Math.atan2(wantPos.x - centre.x, wantPos.z - centre.z);
+        let d = want - cur;
+        if (d > Math.PI) d -= 2 * Math.PI;
+        if (d < -Math.PI) d += 2 * Math.PI;
+        const a = cur + d * k;
+        const r = THREE.MathUtils.lerp(Math.hypot(pos.x - centre.x, pos.z - centre.z), Math.hypot(wantPos.x - centre.x, wantPos.z - centre.z), k);
+        pos.set(centre.x + Math.sin(a) * r, THREE.MathUtils.lerp(pos.y, wantPos.y, k), centre.z + Math.cos(a) * r);
+      } else pos.lerp(wantPos, k);
+      tgt.lerp(wantTgt, k);
+      cam.position.set(pos.x, pos.y + Math.sin(t / 3) * 0.03, pos.z);
+      cam.lookAt(tgt);
     },
   };
 }
@@ -456,6 +615,8 @@ export function buildWorld(v: DemoVariant): DemoWorld {
     case 'car':
       return buildCar();
     case 'truck':
-      return buildTruck();
+    case 'tipper':
+    case 'pickup':
+      return buildCv(v);
   }
 }

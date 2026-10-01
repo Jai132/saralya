@@ -1,0 +1,70 @@
+{
+  "id": "cv-cabin-front",
+  "vehicleClass": "cv",
+  "part": "Cabin front",
+  "widthMm": 2200,
+  "heightMm": 1500,
+  "planar": true,
+  "outline": "M60 0H2140Q2200 0 2200 60V1440Q2200 1500 2140 1500H60Q0 1500 0 1440V60Q0 0 60 0Z M120 80H2080V700H120Z M500 900H1700V1250H500Z",
+  "zones": [
+    {
+      "id": "screen",
+      "label": "Windscreen",
+      "rect": [
+        120,
+        80,
+        1960,
+        620
+      ]
+    },
+    {
+      "id": "grille",
+      "label": "Grille",
+      "rect": [
+        500,
+        900,
+        1200,
+        350
+      ]
+    },
+    {
+      "id": "lamps",
+      "label": "Headlamp corners",
+      "rect": [
+        0,
+        850,
+        2200,
+        300
+      ]
+    },
+    {
+      "id": "lower",
+      "label": "Lower panel",
+      "rect": [
+        0,
+        1250,
+        2200,
+        250
+      ]
+    }
+  ],
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      2200,
+      0
+    ],
+    [
+      2200,
+      1500
+    ],
+    [
+      0,
+      1500
+    ]
+  ],
+  "illustrative": true
+}

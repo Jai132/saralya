@@ -1,0 +1,60 @@
+{
+  "id": "cv-body-r",
+  "vehicleClass": "cv",
+  "part": "Load body right side",
+  "widthMm": 3900,
+  "heightMm": 1100,
+  "planar": true,
+  "outline": "M0 0H3900V1100H0Z M557 0V1100 M1114 0V1100 M1671 0V1100 M2228 0V1100 M2785 0V1100 M3342 0V1100",
+  "zones": [
+    {
+      "id": "top",
+      "label": "Top rail",
+      "rect": [
+        0,
+        0,
+        3900,
+        150
+      ]
+    },
+    {
+      "id": "panels",
+      "label": "Side panels",
+      "rect": [
+        0,
+        150,
+        3900,
+        800
+      ]
+    },
+    {
+      "id": "bottom",
+      "label": "Bottom rail",
+      "rect": [
+        0,
+        950,
+        3900,
+        150
+      ]
+    }
+  ],
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      3900,
+      0
+    ],
+    [
+      3900,
+      1100
+    ],
+    [
+      0,
+      1100
+    ]
+  ],
+  "illustrative": true
+}

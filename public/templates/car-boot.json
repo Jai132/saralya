@@ -1,0 +1,60 @@
+{
+  "id": "car-boot",
+  "vehicleClass": "car",
+  "part": "Boot / tailgate",
+  "widthMm": 1100,
+  "heightMm": 800,
+  "planar": true,
+  "outline": "M60 0H1040Q1100 0 1100 60V740Q1100 800 1040 800H60Q0 800 0 740V60Q0 0 60 0Z M120 60H980L940 360H160Z",
+  "zones": [
+    {
+      "id": "glass",
+      "label": "Rear glass",
+      "rect": [
+        120,
+        60,
+        860,
+        300
+      ]
+    },
+    {
+      "id": "panel",
+      "label": "Lower panel",
+      "rect": [
+        0,
+        360,
+        1100,
+        300
+      ]
+    },
+    {
+      "id": "lip",
+      "label": "Lip / plate area",
+      "rect": [
+        250,
+        660,
+        600,
+        140
+      ]
+    }
+  ],
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      1100,
+      0
+    ],
+    [
+      1100,
+      800
+    ],
+    [
+      0,
+      800
+    ]
+  ],
+  "illustrative": true
+}

@@ -1,4 +1,5 @@
 import type { DemoHint } from '../components/capture/engines/types';
+import { ACTUATIONS } from './vehicles';
 
 export interface ChallengeDef {
   id: string;
@@ -22,6 +23,8 @@ export const CHALLENGES: Record<string, ChallengeDef> = {
   meter: { id: 'meter', text: 'Show the electricity meter now' },
   plate: { id: 'plate', text: 'Show the rear number plate now' },
   hand: { id: 'hand', text: 'Hold up three fingers in front of the camera' },
+  // Vehicle actuation liveness (see data/vehicles.ts).
+  ...Object.fromEntries(ACTUATIONS.map((a) => [a.id, { id: a.id, text: a.text }])),
 };
 
 export const CHALLENGE_WINDOW_S = 15;

@@ -1,0 +1,61 @@
+{
+  "id": "chassis-plate",
+  "vehicleClass": "both",
+  "part": "Chassis number (stamped)",
+  "widthMm": 300,
+  "heightMm": 60,
+  "planar": true,
+  "outline": "M4 0H296Q300 0 300 4V56Q300 60 296 60H4Q0 60 0 56V4Q0 0 4 0Z",
+  "zones": [
+    {
+      "id": "wmi",
+      "label": "Manufacturer code",
+      "rect": [
+        0,
+        0,
+        60,
+        60
+      ]
+    },
+    {
+      "id": "vds",
+      "label": "Descriptor",
+      "rect": [
+        60,
+        0,
+        120,
+        60
+      ]
+    },
+    {
+      "id": "serial",
+      "label": "Serial",
+      "rect": [
+        180,
+        0,
+        120,
+        60
+      ]
+    }
+  ],
+  "note": "Stamped area dimensions are illustrative.",
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      300,
+      0
+    ],
+    [
+      300,
+      60
+    ],
+    [
+      0,
+      60
+    ]
+  ],
+  "illustrative": true
+}

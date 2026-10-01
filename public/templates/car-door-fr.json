@@ -1,0 +1,80 @@
+{
+  "id": "car-door-fr",
+  "vehicleClass": "car",
+  "part": "Front-right door",
+  "widthMm": 1100,
+  "heightMm": 950,
+  "planar": true,
+  "outline": "M30 0H1070Q1100 0 1100 30V920Q1100 950 1070 950H30Q0 950 0 920V30Q0 0 30 0Z M66 47.879999999999995L902 47.879999999999995L1034 367.08000000000004L66 367.08000000000004Z",
+  "zones": [
+    {
+      "id": "window",
+      "label": "Window frame",
+      "rect": [
+        0,
+        0,
+        1100,
+        399
+      ]
+    },
+    {
+      "id": "upper",
+      "label": "Upper panel",
+      "rect": [
+        0,
+        399,
+        1100,
+        192.85
+      ]
+    },
+    {
+      "id": "handle",
+      "label": "Handle area",
+      "rect": [
+        682,
+        465.12,
+        330,
+        121.22
+      ]
+    },
+    {
+      "id": "lower",
+      "label": "Lower panel",
+      "rect": [
+        0,
+        591.85,
+        1100,
+        275.5
+      ]
+    },
+    {
+      "id": "sill",
+      "label": "Sill",
+      "rect": [
+        0,
+        867.35,
+        1100,
+        82.64999999999999
+      ]
+    }
+  ],
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      1100,
+      0
+    ],
+    [
+      1100,
+      950
+    ],
+    [
+      0,
+      950
+    ]
+  ],
+  "illustrative": true
+}

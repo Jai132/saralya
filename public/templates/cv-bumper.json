@@ -1,0 +1,60 @@
+{
+  "id": "cv-bumper",
+  "vehicleClass": "cv",
+  "part": "Bumper",
+  "widthMm": 2400,
+  "heightMm": 300,
+  "planar": false,
+  "outline": "M30 0H2370Q2400 0 2400 30V270Q2400 300 2370 300H30Q0 300 0 270V30Q0 0 30 0Z M950 80H1450V220H950Z",
+  "zones": [
+    {
+      "id": "left",
+      "label": "Left end",
+      "rect": [
+        0,
+        0,
+        600,
+        300
+      ]
+    },
+    {
+      "id": "centre",
+      "label": "Centre / plate",
+      "rect": [
+        600,
+        0,
+        1200,
+        300
+      ]
+    },
+    {
+      "id": "right",
+      "label": "Right end",
+      "rect": [
+        1800,
+        0,
+        600,
+        300
+      ]
+    }
+  ],
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      2400,
+      0
+    ],
+    [
+      2400,
+      300
+    ],
+    [
+      0,
+      300
+    ]
+  ],
+  "illustrative": true
+}

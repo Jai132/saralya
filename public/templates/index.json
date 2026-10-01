@@ -1,0 +1,20 @@
+[
+  "car-bonnet",
+  "car-door-fl",
+  "car-door-rl",
+  "car-door-fr",
+  "car-door-rr",
+  "car-boot",
+  "car-roof",
+  "car-bumper-f",
+  "car-bumper-r",
+  "cv-cabin-front",
+  "cv-door-l",
+  "cv-door-r",
+  "cv-body-l",
+  "cv-body-r",
+  "cv-tailgate",
+  "cv-bumper",
+  "number-plate",
+  "chassis-plate"
+]

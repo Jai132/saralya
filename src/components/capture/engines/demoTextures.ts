@@ -202,6 +202,72 @@ export function plateTexture(text: string) {
   });
 }
 
+/** Stamped characters on bare steel (chassis / engine numbers). */
+export function stampTexture(text: string) {
+  return tex(`stamp:${text}`, 640, 140, (g, w, h) => {
+    const r = rng(17);
+    g.fillStyle = '#6b7280';
+    g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 1800; i++) {
+      const v = 80 + r() * 70;
+      g.fillStyle = `rgba(${v},${v},${v + 6},0.35)`;
+      g.fillRect(r() * w, r() * h, 3, 1);
+    }
+    g.font = 'bold 54px "Courier New", monospace';
+    g.textAlign = 'center';
+    // Light-from-top-left emboss: dark offset, light offset, then the face.
+    g.fillStyle = 'rgba(20,20,24,0.85)';
+    g.fillText(text, w / 2 + 2, h / 2 + 22);
+    g.fillStyle = 'rgba(230,232,236,0.55)';
+    g.fillText(text, w / 2 - 2, h / 2 + 18);
+    g.fillStyle = '#4b5563';
+    g.fillText(text, w / 2, h / 2 + 20);
+  });
+}
+
+/** Instrument cluster with two dials and an LCD odometer, as seen through the driver's window. */
+export function clusterTexture(km: string) {
+  return tex(`cluster:${km}`, 512, 256, (g, w, h) => {
+    g.fillStyle = '#0f172a';
+    g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#334155';
+    g.lineWidth = 6;
+    g.strokeRect(6, 6, w - 12, h - 12);
+    for (const [cx, label] of [
+      [130, 'km/h'],
+      [382, 'rpm'],
+    ] as const) {
+      g.strokeStyle = '#cbd5e1';
+      g.lineWidth = 4;
+      g.beginPath();
+      g.arc(cx, 120, 82, Math.PI * 0.8, Math.PI * 2.2);
+      g.stroke();
+      for (let i = 0; i <= 10; i++) {
+        const a = Math.PI * 0.8 + (i / 10) * Math.PI * 1.4;
+        g.beginPath();
+        g.moveTo(cx + Math.cos(a) * 70, 120 + Math.sin(a) * 70);
+        g.lineTo(cx + Math.cos(a) * 82, 120 + Math.sin(a) * 82);
+        g.stroke();
+      }
+      g.strokeStyle = '#f97316';
+      g.beginPath();
+      g.moveTo(cx, 120);
+      g.lineTo(cx + Math.cos(Math.PI * 1.05) * 66, 120 + Math.sin(Math.PI * 1.05) * 66);
+      g.stroke();
+      g.fillStyle = '#94a3b8';
+      g.font = '18px Arial';
+      g.textAlign = 'center';
+      g.fillText(label, cx, 170);
+    }
+    g.fillStyle = '#a7f3d0';
+    g.fillRect(176, 196, 160, 42);
+    g.fillStyle = '#064e3b';
+    g.font = 'bold 30px "Courier New", monospace';
+    g.textAlign = 'center';
+    g.fillText(`${km} km`, 256, 228);
+  });
+}
+
 export function tyreTexture() {
   return tex('tyre', 256, 64, (g, w, h) => {
     g.fillStyle = '#1f2937';

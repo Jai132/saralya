@@ -2,7 +2,13 @@ import type { EngineKind } from '../../../store/captures';
 import type { Pose } from '../../../lib/sensors';
 
 export type FlowKind = 'msme' | 'lap' | 'vehicle';
-export type DemoVariant = 'shop' | 'house' | 'car' | 'truck';
+export type DemoVariant = 'shop' | 'house' | 'car' | 'truck' | 'tipper' | 'pickup';
+
+/**
+ * Where the vehicle ghost outline sits, as fractions of the viewport. The demo camera frames the vehicle into the
+ * same box, so the synthetic vehicle and the outline line up at every angle.
+ */
+export const GHOST_BOX = { left: 0.07, width: 0.86, top: 0.34, height: 0.32 };
 
 /** Hints a capture step can send to the synthetic scene so the autopilot acts out a challenge. */
 export type DemoHint = 'look-up' | 'look-down' | 'circle' | null;
@@ -29,6 +35,8 @@ export interface FrameEngine {
   hfov: number;
   torch?: { supported: boolean; set(on: boolean): Promise<void> };
   hint?(h: DemoHint): void;
+  /** Demo scene only: aim at a named spot for the current step (vehicle angle, plate, chassis…). */
+  focus?(key: string | null): void;
   /** False when the engine has no 2D frame to analyse (WebXR draws its own 3D overlay). Default true. */
   analyse?: boolean;
   /** World-space points (metres) found since the last call, for the mini-map. */

@@ -394,7 +394,7 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
 
   useEffect(() => {
     if (engine.status !== 'running' || !step.challenge) return;
-    const t = window.setTimeout(() => issueChallenge(step.id, step.challenge, 1), 2500);
+    const t = window.setTimeout(() => issueChallenge(step.id, step.challenge, 1), step.kind === 'challenge' ? 700 : 2500);
     return () => window.clearTimeout(t);
   }, [engine.status, step.id, step.challenge, issueChallenge]);
 
@@ -441,9 +441,23 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
   // ————— Step completion —————
   // A step with a challenge only completes once that challenge is verified or its retry window has passed.
   const challengePending = (!!challenge && challenge.stepId === step.id) || (!!step.challenge && !resolved[step.id]);
+  // Per-step demo camera target, and the torch for steps that need it (e.g. chassis-number relief).
+  useEffect(() => {
+    if (engine.status !== 'running') return;
+    const eng = engineRef.current;
+    eng?.focus?.(step.focus ?? null);
+    const t = eng?.torch;
+    if (!t?.supported) return;
+    const want = !!step.torch;
+    t.set(want)
+      .then(() => setTorchOn(want))
+      .catch(() => undefined);
+  }, [engine.status, step.id, step.focus, step.torch]);
+
   const photoDone = step.kind === 'photo' && (shots[step.id] ?? 0) >= (step.shots ?? 1);
   const sweepDone = step.kind === 'sweep' && (shots[step.id] ?? 0) >= 1;
-  const ready = (photoDone || sweepDone) && !challengePending;
+  const challengeDone = step.kind === 'challenge' && !!resolved[step.id] && !challenge;
+  const ready = ((photoDone || sweepDone) && !challengePending) || challengeDone;
 
   const finish = useCallback(async () => {
     await sealQueue.current;
@@ -623,7 +637,7 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
               </span>
             </button>
             <Shutter
-              mode={step.kind}
+              mode={step.kind === 'sweep' ? 'sweep' : 'photo'}
               recording={sweeping}
               progress={hud.sweep}
               blocked={hud.verdict !== 'ok' && step.kind === 'photo'}
@@ -639,6 +653,9 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
               <Flashlight className="h-5 w-5" />
             </button>
           </div>
+          {step.kind === 'challenge' && (
+            <div className="pb-2 text-center text-[11px] text-white/60">The shutter is optional here — the action is sealed when verified</div>
+          )}
           {step.kind === 'photo' && (
             <div className="pb-2 text-center text-[11px] text-white/60">
               {(shots[step.id] ?? 0)}/{step.shots ?? 1} photo{(step.shots ?? 1) > 1 ? 's' : ''} for this step

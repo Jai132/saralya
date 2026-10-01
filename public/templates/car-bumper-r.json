@@ -1,0 +1,60 @@
+{
+  "id": "car-bumper-r",
+  "vehicleClass": "car",
+  "part": "Rear bumper",
+  "widthMm": 1650,
+  "heightMm": 450,
+  "planar": false,
+  "outline": "M80 0H1570Q1650 0 1650 90V360Q1650 450 1570 450H80Q0 450 0 360V90Q0 0 80 0Z",
+  "zones": [
+    {
+      "id": "left",
+      "label": "Left corner",
+      "rect": [
+        0,
+        0,
+        400,
+        450
+      ]
+    },
+    {
+      "id": "centre",
+      "label": "Centre",
+      "rect": [
+        400,
+        0,
+        850,
+        450
+      ]
+    },
+    {
+      "id": "right",
+      "label": "Right corner",
+      "rect": [
+        1250,
+        0,
+        400,
+        450
+      ]
+    }
+  ],
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      1650,
+      0
+    ],
+    [
+      1650,
+      450
+    ],
+    [
+      0,
+      450
+    ]
+  ],
+  "illustrative": true
+}

@@ -1,0 +1,80 @@
+{
+  "id": "car-door-rl",
+  "vehicleClass": "car",
+  "part": "Rear-left door",
+  "widthMm": 950,
+  "heightMm": 950,
+  "planar": true,
+  "outline": "M30 0H920Q950 0 950 30V920Q950 950 920 950H30Q0 950 0 920V30Q0 0 30 0Z M171 47.879999999999995L893 47.879999999999995L893 367.08000000000004L57 367.08000000000004Z",
+  "zones": [
+    {
+      "id": "window",
+      "label": "Window frame",
+      "rect": [
+        0,
+        0,
+        950,
+        399
+      ]
+    },
+    {
+      "id": "upper",
+      "label": "Upper panel",
+      "rect": [
+        0,
+        399,
+        950,
+        192.85
+      ]
+    },
+    {
+      "id": "handle",
+      "label": "Handle area",
+      "rect": [
+        589,
+        465.12,
+        285,
+        121.22
+      ]
+    },
+    {
+      "id": "lower",
+      "label": "Lower panel",
+      "rect": [
+        0,
+        591.85,
+        950,
+        275.5
+      ]
+    },
+    {
+      "id": "sill",
+      "label": "Sill",
+      "rect": [
+        0,
+        867.35,
+        950,
+        82.64999999999999
+      ]
+    }
+  ],
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      950,
+      0
+    ],
+    [
+      950,
+      950
+    ],
+    [
+      0,
+      950
+    ]
+  ],
+  "illustrative": true
+}

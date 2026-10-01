@@ -9,6 +9,7 @@ import LoanSelect from './screens/borrower/LoanSelect';
 import InspectConsent from './screens/borrower/InspectConsent';
 import Home from './screens/borrower/Home';
 import InspectRunner from './screens/borrower/InspectRunner';
+import VehicleFlow from './screens/borrower/vehicle/VehicleFlow';
 
 export default function AppRoutes() {
   return (
@@ -20,6 +21,7 @@ export default function AppRoutes() {
       <Route path="/b/onboarding" element={<Onboarding />} />
       <Route path="/b/loan" element={<LoanSelect />} />
       <Route path="/b/inspect" element={<InspectConsent />} />
+      <Route path="/b/inspect/vehicle" element={<VehicleFlow />} />
       <Route path="/b/inspect/:product" element={<InspectRunner />} />
       <Route path="/b/home" element={<Home />} />
       <Route path="/lender/*" element={<Placeholder title="Lender console" />} />

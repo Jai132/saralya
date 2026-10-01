@@ -133,6 +133,7 @@ export async function startDemoEngine(container: HTMLElement, variant: DemoVaria
       const hit = ray.intersectObjects(world.scene.children, true)[0];
       return hit ? hit.distance : null;
     },
+    focus: (key) => world.focus?.(key),
     hint: (h) => {
       hint = h;
       hintAt = performance.now();

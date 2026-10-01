@@ -1,0 +1,51 @@
+{
+  "id": "number-plate",
+  "vehicleClass": "both",
+  "part": "Number plate",
+  "widthMm": 500,
+  "heightMm": 120,
+  "planar": true,
+  "outline": "M8 0H492Q500 0 500 8V112Q500 120 492 120H8Q0 120 0 112V8Q0 0 8 0Z M12 12H70V108H12Z",
+  "zones": [
+    {
+      "id": "ind",
+      "label": "IND / hologram strip",
+      "rect": [
+        0,
+        0,
+        80,
+        120
+      ]
+    },
+    {
+      "id": "chars",
+      "label": "Registration characters",
+      "rect": [
+        80,
+        0,
+        420,
+        120
+      ]
+    }
+  ],
+  "note": "Plate size is a placeholder based on standard HSRP sizes — verify against spec.",
+  "corners": [
+    [
+      0,
+      0
+    ],
+    [
+      500,
+      0
+    ],
+    [
+      500,
+      120
+    ],
+    [
+      0,
+      120
+    ]
+  ],
+  "illustrative": true
+}
