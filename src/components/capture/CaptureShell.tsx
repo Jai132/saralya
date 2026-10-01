@@ -1,12 +1,13 @@
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { Camera, CameraOff, Check, Flashlight, ListChecks, MonitorPlay, RotateCcw, ArrowLeft } from 'lucide-react';
+import { Box, Camera, CameraOff, Check, Flashlight, ListChecks, MonitorPlay, RotateCcw, ArrowLeft, ScanLine } from 'lucide-react';
 import { Button, Sheet } from '../ui';
 import { ChallengeCard, ChallengeStatus, PromptBanner, QualityMeter, SealTicker, Shutter, TopBar } from './HUD';
 import { PointCloudMiniMap, MiniMapHandle } from './PointCloudMiniMap';
 import { Analysis, drawOverlay, FrameAnalyzer } from './analyzer';
 import { startCameraEngine } from './engines/cameraEngine';
 import { startDemoEngine } from './engines/demoEngine';
+import { startArEngine } from './engines/arEngine';
 import type { FrameEngine } from './engines/types';
 import { CaptureScript, CaptureStep } from '../../data/scripts';
 import { CHALLENGES, CHALLENGE_WINDOW_S, ChallengeDef, randomCode } from '../../data/challenges';
@@ -79,6 +80,7 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
   const headOf = useCaptures((s) => s.head);
 
   const stageRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const miniRef = useRef<MiniMapHandle>(null);
   const engineRef = useRef<FrameEngine | null>(null);
@@ -87,7 +89,7 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
 
   const [forced, setForced] = useState<EngineKind | null>(null);
   const [retry, setRetry] = useState(0);
-  const [engine, setEngine] = useState<{ status: 'starting' | 'running' | 'error'; kind?: EngineKind; label?: string; torch?: boolean; error?: CameraError }>({
+  const [engine, setEngine] = useState<{ status: 'starting' | 'needs-gesture' | 'running' | 'error'; offerOnly?: boolean; kind?: EngineKind; label?: string; torch?: boolean; error?: CameraError }>({
     status: 'starting',
   });
 
@@ -103,7 +105,7 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
   const stepRef = useRef(step);
   stepRef.current = step;
 
-  const [hud, setHud] = useState({ verdict: 'ok' as QualityVerdict, brightness: 128, sharpness: 100, points: 0, fps: 0, coverage: new Array(BINS).fill(0) as number[], sweep: 0 });
+  const [hud, setHud] = useState({ verdict: 'ok' as QualityVerdict, brightness: 128, sharpness: 100, points: 0, fps: 0, coverage: new Array(BINS).fill(0) as number[], sweep: 0, ar: null as null | { tracking: boolean; surfaces: number; depth: boolean } });
   const [sweeping, setSweeping] = useState(false);
   const sweep = useRef({ active: false, startedAt: 0, min: 0, max: 0, keyframes: 0, progress: 0 });
 
@@ -130,14 +132,26 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
   const pose = useRef<Pose>({ yaw: 0, pitch: 0 });
 
   // ————— Engine lifecycle —————
+  // AR needs a tap to start (Chrome only grants immersive-ar inside a user gesture), so the effect stops at
+  // 'needs-gesture' and the start card calls startAr() from its click handler.
+  const arRef = useRef<FrameEngine | null>(null);
   useEffect(() => {
     let cancelled = false;
     let eng: FrameEngine | null = null;
     setEngine({ status: 'starting' });
     (async () => {
       const caps = await detectCapabilities();
-      const kind: EngineKind =
-        forced ?? (engineChoice === 'demo' ? 'demo' : engineChoice === 'camera' || engineChoice === 'ar' ? 'camera' : caps.camera && caps.secure ? 'camera' : 'demo');
+      let kind: EngineKind;
+      if (forced) kind = forced;
+      else if (engineChoice === 'demo') kind = 'demo';
+      else if (engineChoice === 'camera') kind = 'camera';
+      else if (engineChoice === 'ar') kind = caps.webxrAR ? 'ar' : 'camera';
+      else kind = caps.webxrAR ? 'ar' : caps.camera && caps.secure ? 'camera' : 'demo';
+      if (engineChoice === 'ar' && !caps.webxrAR && !forced) setToast({ text: 'AR not supported here — using Camera mode', key: Date.now() });
+      if (kind === 'ar') {
+        if (!cancelled) setEngine({ status: 'needs-gesture', offerOnly: engineChoice === 'auto' });
+        return;
+      }
       try {
         eng = kind === 'demo' ? await startDemoEngine(stageRef.current!, script.demo) : await startCameraEngine(stageRef.current!);
       } catch (e) {
@@ -155,10 +169,41 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
     return () => {
       cancelled = true;
       eng?.stop();
+      arRef.current?.stop();
+      arRef.current = null;
       engineRef.current = null;
       setTorchOn(false);
     };
   }, [engineChoice, forced, retry, script.demo]);
+
+  // Toasts only render on the live HUD, so start their timer once capture is running.
+  const hudLive = engine.status === 'running';
+  useEffect(() => {
+    if (!toast || !hudLive) return;
+    const t = window.setTimeout(() => setToast(null), 3200);
+    return () => window.clearTimeout(t);
+  }, [toast, hudLive]);
+
+  const startAr = async () => {
+    setEngine({ status: 'starting' });
+    try {
+      const eng = await startArEngine(rootRef.current!, () => {
+        // Session ended by the system or the back gesture: continue in Camera mode.
+        arRef.current = null;
+        engineRef.current = null;
+        setToast({ text: 'AR session ended — continuing in Camera mode', key: Date.now() });
+        setForced('camera');
+      });
+      arRef.current = eng;
+      engineRef.current = eng;
+      miniRef.current?.clear();
+      setEngine({ status: 'running', kind: 'ar', label: eng.label, torch: false });
+    } catch (e) {
+      console.warn('[capture] AR failed to start', e);
+      setToast({ text: 'AR couldn’t start — using Camera mode', key: Date.now() });
+      setForced('camera');
+    }
+  };
 
   // ————— Sealing —————
   const sealFrame = useCallback(
@@ -168,7 +213,7 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
         if (!eng) return null;
         const a = latest.current;
         const g = geoRef.current;
-        const { blob, width, height } = await eng.capture();
+        const { blob, width, height, overlayOnly } = await eng.capture();
         const id = `cap_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
         const ts = Date.now();
         const imageHash = blob ? await sha256Hex(await blob.arrayBuffer()) : await sha256Hex(`${id}|${ts}|no-frame`);
@@ -190,7 +235,7 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
           imageHash,
           prevHash,
           blobId: blob ? id : undefined,
-          note: note ?? (blob ? undefined : 'camera frame unavailable in this mode'),
+          note: note ?? (!blob || overlayOnly ? 'camera frame unavailable in this mode' : undefined),
         };
         const hash = await linkHash(prevHash, imageHash, meta);
         if (blob) await blobs.put(id, blob);
@@ -224,17 +269,20 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
       if (!stage || !cv) return;
       const W = stage.clientWidth;
       const H = stage.clientHeight;
-      const a = analyzer.current.step(eng, W, H);
-      if (!a) return;
-      latest.current = a;
-      const dpr = Math.min(window.devicePixelRatio, 2);
-      if (cv.width !== Math.round(W * dpr)) {
-        cv.width = Math.round(W * dpr);
-        cv.height = Math.round(H * dpr);
+      // WebXR draws its own 3D overlay and has no 2D frame for the feature detector.
+      const a = eng.analyse === false ? null : analyzer.current.step(eng, W, H);
+      if (eng.analyse !== false) {
+        if (!a) return;
+        latest.current = a;
+        const dpr = Math.min(window.devicePixelRatio, 2);
+        if (cv.width !== Math.round(W * dpr)) {
+          cv.width = Math.round(W * dpr);
+          cv.height = Math.round(H * dpr);
+        }
+        const ctx = cv.getContext('2d')!;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        drawOverlay(ctx, a, W, H, { mesh: true });
       }
-      const ctx = cv.getContext('2d')!;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawOverlay(ctx, a, W, H, { mesh: true });
 
       // Heading: engine pose (demo/XR) → device orientation → integrated optical flow.
       const hfov = eng.hfov;
@@ -242,7 +290,7 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
       const ep = eng.pose?.();
       if (ep) pose.current = ep;
       else if (orient.current) pose.current = { ...orient.current };
-      else {
+      else if (a) {
         flowYaw += (a.flow.dx / a.aw) * hfov;
         flowPitch = Math.max(-1.2, Math.min(1.2, flowPitch + (a.flow.dy / a.ah) * vfov));
         pose.current = { yaw: flowYaw, pitch: flowPitch };
@@ -275,7 +323,12 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
       }
 
       // Mini-map: every 3rd tick, lift a sample of stable points into 3D.
-      if (tick % 3 === 0 && miniRef.current) {
+      if (tick % 3 === 0 && miniRef.current && eng.drainCloud) {
+        // Real world points from the engine (WebXR depth / hit-test).
+        const c = eng.drainCloud();
+        miniRef.current.setPose(p);
+        miniRef.current.add(c.points, c.count);
+      } else if (tick % 3 === 0 && miniRef.current && a) {
         const stable = a.tracks.filter((t) => t.age >= 2);
         const stride = Math.max(1, Math.floor(stable.length / 28));
         let n = 0;
@@ -305,14 +358,16 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
       }
 
       if (tick % 4 === 0) {
+        const st = eng.status?.();
         setHud({
-          verdict: qualityVerdict(a.quality, a.motion),
-          brightness: a.quality.brightness,
-          sharpness: a.quality.sharpness,
-          points: a.tracks.length,
-          fps: a.fps,
+          verdict: a ? qualityVerdict(a.quality, a.motion) : 'ok',
+          brightness: a?.quality.brightness ?? 128,
+          sharpness: a?.quality.sharpness ?? 200,
+          points: a ? a.tracks.length : st?.points ?? 0,
+          fps: a ? a.fps : st?.fps ?? 0,
           coverage: [...bins],
           sweep: s.active ? s.progress : 0,
+          ar: st ? { tracking: st.tracking, surfaces: st.surfaces, depth: st.depth } : null,
         });
       }
       tick++;
@@ -407,7 +462,6 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
     if (!ready || stepDone) return;
     setStepDone(true);
     setToast({ text: `${step.title} ✓`, key: Date.now() });
-    window.setTimeout(() => setToast(null), 2200);
     const t = window.setTimeout(() => {
       setStepDone(false);
       if (stepIdx < script.steps.length - 1) setStepIdx(stepIdx + 1);
@@ -493,7 +547,7 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-black text-white">
+    <div ref={rootRef} className={`fixed inset-0 overflow-hidden text-white ${engine.kind === 'ar' && engine.status === 'running' ? 'bg-transparent' : 'bg-black'}`}>
       <div ref={stageRef} className="absolute inset-0" />
       <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" />
       {overlay && engine.status === 'running' && <div className="pointer-events-none absolute inset-0">{overlay(shellState)}</div>}
@@ -508,7 +562,8 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
             points={hud.points}
             fps={hud.fps}
             onClose={() => setConfirmExit(true)}
-            onSettings={() => openSettings(true)}
+            // The global settings drawer sits outside the AR overlay root, so it can't show during an AR session.
+            onSettings={engine.kind === 'ar' ? undefined : () => openSettings(true)}
           />
           <PromptBanner
             index={stepIdx}
@@ -537,13 +592,19 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
             </div>
           )}
           {nudge && <div className="mx-auto mb-2 animate-fadeUp rounded-full bg-ember px-4 py-1.5 text-sm font-semibold">{nudge}</div>}
+          {hud.ar && (!hud.ar.tracking || hud.ar.surfaces === 0) && (
+            <div className="mx-auto mb-2 flex items-center gap-2 rounded-full bg-black/55 px-4 py-1.5 text-sm backdrop-blur-md">
+              <ScanLine className="h-4 w-4 animate-pulse text-teal-light" />
+              {hud.ar.tracking ? 'Point at the floor and move slowly to find surfaces' : 'Move your phone slowly to start tracking'}
+            </div>
+          )}
 
           <div className="flex items-end justify-between px-3">
             <div className="pointer-events-auto">
               <PointCloudMiniMap ref={miniRef} size={112} coverage={hud.coverage} />
               <div className="mt-0.5 text-center text-[10px] text-white/70">Coverage {Math.round(coverage * 100)}%</div>
             </div>
-            <QualityMeter brightness={hud.brightness} sharpness={hud.sharpness} verdict={hud.verdict} />
+            {hud.ar ? <ArStatus {...hud.ar} points={hud.points} /> : <QualityMeter brightness={hud.brightness} sharpness={hud.sharpness} verdict={hud.verdict} />}
           </div>
 
           <div className="mt-2 flex justify-center">
@@ -584,6 +645,10 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
             </div>
           )}
         </div>
+      )}
+
+      {engine.status === 'needs-gesture' && (
+        <ArStartCard offerOnly={!!engine.offerOnly} onStart={startAr} onCamera={() => setForced('camera')} onBack={onExit} />
       )}
 
       {engine.status === 'starting' && (
@@ -658,6 +723,50 @@ function logEntry(c: ActiveChallenge, result: 'verified' | 'missed'): ChallengeR
     result,
     respondedInS: result === 'verified' ? Math.round((Date.now() - c.issuedAt) / 100) / 10 : undefined,
   };
+}
+
+function ArStatus({ tracking, surfaces, depth, points }: { tracking: boolean; surfaces: number; depth: boolean; points: number }) {
+  return (
+    <div className="pointer-events-auto rounded-xl border border-white/10 bg-black/40 px-2.5 py-2 text-[10.5px] leading-relaxed text-white backdrop-blur-md">
+      <div className="flex items-center gap-1.5 font-semibold text-teal-light">
+        <span className={`h-1.5 w-1.5 rounded-full ${tracking ? 'bg-teal-light' : 'animate-pulseDot bg-orange-400'}`} />
+        {tracking ? 'AR tracking' : 'Finding the world…'}
+      </div>
+      <div className="text-white/75">{surfaces} surfaces anchored</div>
+      <div className="text-white/75">
+        {points.toLocaleString('en-IN')} pts · {depth ? 'depth sensor' : 'hit-test rays'}
+      </div>
+      <div className="mt-0.5 text-white/50">Tap the scene to add a surface</div>
+    </div>
+  );
+}
+
+function ArStartCard({ offerOnly, onStart, onCamera, onBack }: { offerOnly: boolean; onStart: () => void; onCamera: () => void; onBack: () => void }) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-navy p-6">
+      <div className="w-full max-w-sm text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal/20">
+          <Box className="h-7 w-7 text-teal-light" />
+        </div>
+        <h2 className="mb-2 font-serif text-xl font-semibold text-white">{offerOnly ? 'AR mode is available' : 'Start AR capture'}</h2>
+        <p className="mb-6 text-sm text-white/70">
+          This phone supports augmented reality. Saralya will anchor grids to floors and walls and build a live 3D point cloud as you move.
+          Works best in good light, moving slowly.
+        </p>
+        <div className="space-y-2">
+          <Button block onClick={onStart} icon={<Box className="h-4 w-4" />}>
+            Start AR
+          </Button>
+          <Button block variant="glass" onClick={onCamera} icon={<Camera className="h-4 w-4" />}>
+            Use camera instead
+          </Button>
+          <Button block variant="ghost" className="!text-white/70" onClick={onBack} icon={<ArrowLeft className="h-4 w-4" />}>
+            Go back
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function EngineError({ error, onRetry, onDemo, onBack }: { error: CameraError; onRetry: () => void; onDemo: () => void; onBack: () => void }) {

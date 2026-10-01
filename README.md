@@ -31,6 +31,16 @@ Camera and WebXR need a secure context. `localhost` counts as secure, so the eas
 
 Alternative over Wi-Fi: `npm run dev:https` serves on your LAN IP with a self-signed certificate (via `@vitejs/plugin-basic-ssl`). Open `https://<laptop-ip>:5173` on the phone and accept the certificate warning.
 
+### Capture engines
+
+| Engine | When | What it shows |
+|---|---|---|
+| **AR** (WebXR) | ARCore phones in Chrome. *Auto* offers it with a **Start AR** card (Chrome only opens AR from a tap) | Hit-test reticle, teal grid patches anchored to floors and walls, a world point cloud from the depth sensor (or a 5×5 fan of hit-test rays without depth) |
+| **Camera** | Default fallback on Android; any device with a camera | Live FAST corners, trails, Delaunay wireframe, simulated 3D mini-map |
+| **Demo** | Laptops / no camera | Synthetic three.js shop, house or vehicle through the same detector and HUD |
+
+Force one under **Settings → Capture engine**. If AR can't start or the session ends (e.g. the back gesture), capture continues in Camera mode. AR needs Google Play Services for AR installed; when it fails, the reason is logged to the console — check it via `chrome://inspect`. With camera-access, captures in AR are real camera frames; without it they are an overlay snapshot, flagged "camera frame unavailable in this mode".
+
 **Settings → Camera check** (gear icon on the landing page) is a quick diagnostic that shows camera resolution, torch support, GPS and WebXR availability on the device.
 
 ## Deploy to GitHub Pages

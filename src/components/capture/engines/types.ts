@@ -29,7 +29,13 @@ export interface FrameEngine {
   hfov: number;
   torch?: { supported: boolean; set(on: boolean): Promise<void> };
   hint?(h: DemoHint): void;
+  /** False when the engine has no 2D frame to analyse (WebXR draws its own 3D overlay). Default true. */
+  analyse?: boolean;
+  /** World-space points (metres) found since the last call, for the mini-map. */
+  drainCloud?(): { points: Float32Array; count: number };
+  /** Live status for engines that track the world themselves. */
+  status?(): { tracking: boolean; surfaces: number; points: number; fps: number; depth: boolean };
   /** Full-resolution JPEG of the current frame. */
-  capture(): Promise<{ blob: Blob | null; width: number; height: number }>;
+  capture(): Promise<{ blob: Blob | null; width: number; height: number; overlayOnly?: boolean }>;
   stop(): void;
 }

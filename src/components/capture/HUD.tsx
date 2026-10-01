@@ -35,7 +35,7 @@ export function TopBar({
   points: number;
   fps: number;
   onClose: () => void;
-  onSettings: () => void;
+  onSettings?: () => void;
 }) {
   const gps =
     geo.status === 'ok' ? (
@@ -63,9 +63,11 @@ export function TopBar({
           Live capture only
         </HudChip>
         <div className="flex-1" />
-        <button onClick={onSettings} className="rounded-full bg-black/35 p-1.5 text-white backdrop-blur-md" aria-label="Capture settings">
-          <Settings className="h-4 w-4" />
-        </button>
+        {onSettings && (
+          <button onClick={onSettings} className="rounded-full bg-black/35 p-1.5 text-white backdrop-blur-md" aria-label="Capture settings">
+            <Settings className="h-4 w-4" />
+          </button>
+        )}
       </div>
       <div className="-mx-3 mt-1.5 flex gap-1.5 overflow-x-auto px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {gps}
