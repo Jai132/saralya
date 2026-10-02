@@ -392,3 +392,39 @@ export function signTexture(text: string, sub: string) {
     g.fillText(sub, w / 2, 150);
   });
 }
+
+/** Electricity meter face: utility label, LCD reading, kWh, a pulse LED and a serial. */
+export function meterTexture(kwh: string) {
+  return tex(`meter:${kwh}`, 256, 320, (g, w, h) => {
+    g.fillStyle = '#e5e7eb';
+    g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#9ca3af';
+    g.lineWidth = 6;
+    g.strokeRect(6, 6, w - 12, h - 12);
+    g.fillStyle = '#1f2937';
+    g.font = 'bold 20px Arial';
+    g.textAlign = 'center';
+    g.fillText('DEMO DISCOM', w / 2, 44);
+    g.font = '13px Arial';
+    g.fillText('1-PH STATIC ENERGY METER', w / 2, 64);
+    g.fillStyle = '#365314';
+    g.fillRect(30, 92, w - 60, 66);
+    g.fillStyle = '#bef264';
+    g.font = 'bold 44px "Courier New", monospace';
+    g.fillText(kwh, w / 2 - 14, 141);
+    g.font = 'bold 16px Arial';
+    g.fillText('kWh', w - 58, 141);
+    g.fillStyle = '#dc2626';
+    g.beginPath();
+    g.arc(52, 190, 7, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = '#374151';
+    g.font = '12px Arial';
+    g.textAlign = 'left';
+    g.fillText('imp/kWh 3200', 68, 194);
+    g.textAlign = 'center';
+    g.font = '14px "Courier New", monospace';
+    g.fillText('SR. NO. DM 2104 8837', w / 2, 240);
+    g.fillText('240V  5-30A  50Hz', w / 2, 262);
+  });
+}

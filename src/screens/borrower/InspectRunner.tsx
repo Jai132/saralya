@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { CaptureShell, CaptureSummary } from '../../components/capture/CaptureShell';
-import { LAP_SCRIPT, MSME_SCRIPT, vehicleScript } from '../../data/scripts';
+import { LAP_SCRIPT, vehicleScript } from '../../data/scripts';
 import { useMe } from '../../store/useMe';
 import { useApplications } from '../../store/application';
 
-/** Runs the product's capture script. Flow-specific screens (M5–M7) wrap this with their own steps. */
+/** Runs the product's capture script for products without a dedicated flow screen yet (property, until M7). */
 export default function InspectRunner() {
   const nav = useNavigate();
   const me = useMe();
@@ -15,7 +15,6 @@ export default function InspectRunner() {
 
   const script = useMemo(() => {
     if (!app) return null;
-    if (app.product === 'msme') return MSME_SCRIPT;
     if (app.product === 'lap') return LAP_SCRIPT;
     return vehicleScript(app.vehicleKind ?? 'car');
   }, [app]);

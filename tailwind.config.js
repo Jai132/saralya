@@ -26,6 +26,8 @@ export default {
         shake: { '0%,100%': { transform: 'none' }, '20%,60%': { transform: 'translateX(-6px)' }, '40%,80%': { transform: 'translateX(6px)' } },
         flash: { from: { opacity: '0.85' }, to: { opacity: '0' } },
         toast: { '0%': { opacity: '0', transform: 'translateY(8px)' }, '12%,80%': { opacity: '1', transform: 'none' }, '100%': { opacity: '0' } },
+        scanline: { '0%,100%': { top: '4%' }, '50%': { top: '94%' } },
+        grow: { from: { transform: 'scaleX(0)' }, to: { transform: 'scaleX(1)' } },
       },
       animation: {
         fadeUp: 'fadeUp .35s ease-out both',
@@ -33,6 +35,8 @@ export default {
         flash: 'flash .45s ease-out forwards',
         shake: 'shake .35s ease',
         toast: 'toast 2.2s ease forwards',
+        scanline: 'scanline 2.4s ease-in-out infinite',
+        grow: 'grow .6s ease-out both',
       },
     },
   },

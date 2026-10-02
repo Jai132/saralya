@@ -18,6 +18,7 @@ import {
   tyreTexture,
   wallTexture,
   woodTexture,
+  meterTexture,
 } from './demoTextures';
 import { GHOST_BOX, type DemoVariant } from './types';
 
@@ -163,7 +164,7 @@ function buildShop(): DemoWorld {
   box(scene, 2.2, 3, 0.15, wall, -2.0, 1.5, 2.3);
   box(scene, 2.2, 3, 0.15, wall, 2.0, 1.5, 2.3);
   box(scene, 1.8, 0.7, 0.15, wall, 0, 2.65, 2.3);
-  plane(scene, 6, 3, std({ map: brickTexture([3, 2]) }), [0, 1.5, 4.5], [0, Math.PI, 0]);
+  plane(scene, 8, 3.4, std({ map: brickTexture([4, 2]) }), [0, 1.7, 7.6], [0, Math.PI, 0]);
 
   const back = shelfUnit(5.8, 2.5, 0.42, 5, 1);
   back.position.set(0, 0, -3.85);
@@ -208,12 +209,73 @@ function buildShop(): DemoWorld {
   box(scene, 1.2, 0.04, 0.06, tube, -1, 2.97, -1.5);
   box(scene, 1.2, 0.04, 0.06, tube, 1, 2.97, -1.5);
 
+  // Street side: pavement, the façade above the shutter and the shop's own signboard.
+  plane(scene, 8, 5.4, std({ map: concreteTexture([4, 3]) }), [0, 0.001, 5.0], [-Math.PI / 2, 0, 0]);
+  plane(scene, 6.2, 1.4, std({ map: brickTexture([3, 1]) }), [0, 3.7, 2.38], [0, 0, 0]);
+  for (const x of [-4.6, 4.6]) plane(scene, 3, 4.4, std({ map: brickTexture([2, 2]) }), [x, 2.2, 2.38], [0, 0, 0]);
+  plane(scene, 2.6, 0.46, std({ map: signTexture('SHREE GANESH KIRANA', 'General & Provision Store') }), [0, 2.6, 2.39], [0, 0, 0]);
+
+  // Electricity meter on the right wall near the shutter.
+  box(scene, 0.12, 0.44, 0.34, std({ color: 0x9ca3af }), 3.03, 1.85, 1.6);
+  plane(scene, 0.26, 0.33, std({ map: meterTexture('04718') }), [2.966, 1.85, 1.6], [0, -Math.PI / 2, 0]);
+
+  // Back-room stock: stacked cartons beside the sacks.
+  const carton = std({ map: boxTexture('#a16207', 'CARTON', '24 × 1 KG') });
+  for (let i = 0; i < 6; i++) box(scene, 0.42, 0.32, 0.36, carton, -2.25 + (i % 2) * 0.02, 0.16 + Math.floor(i / 2) * 0.33, -3.45 + (i % 2) * 0.44);
+
+  // Per-step camera targets. Shelf walls are swept: the camera pans across the wall and tilts top to bottom.
+  const spots: Record<string, Spot & { sweep?: boolean }> = {
+    frontage: { pos: v3(0, 1.6, 6.9), target: v3(0, 1.75, 2.3) },
+    counter: { pos: v3(0.25, 1.7, 1.8), target: v3(0.95, 0.95, 0.3) },
+    'shelf-left': { pos: v3(-0.3, 1.5, -1.1), target: v3(-2.9, 1.25, -1.2), sweep: true },
+    'shelf-back': { pos: v3(0, 1.5, -0.8), target: v3(0, 1.25, -3.9), sweep: true },
+    'shelf-right': { pos: v3(0.3, 1.5, -1.1), target: v3(2.9, 1.25, -1.2), sweep: true },
+    storage: { pos: v3(-1.0, 1.5, -1.0), target: v3(-2.3, 0.35, -2.6) },
+    meter: { pos: v3(2.3, 1.82, 1.6), target: v3(3.0, 1.85, 1.6) },
+  };
+  let focus: string | null = null;
+  let focusAt = 0;
+  let last = 0;
+  const pos = v3(0, 1.55, 1.45);
+  const tgt = v3(0, 1.4, -2);
+  const wantTgt = new THREE.Vector3();
+  const dir = new THREE.Vector3();
+
   return {
     scene,
+    focus(key) {
+      if (key !== focus) focusAt = -1;
+      focus = key;
+    },
     update(t, cam) {
-      const yaw = Math.sin((t * 2 * Math.PI) / 34) * 1.3;
-      const pitch = -0.12 + Math.sin((t * 2 * Math.PI) / 11) * 0.06;
-      aim(cam, Math.sin(t / 13) * 0.45, 1.55, 1.45, yaw, pitch);
+      const dt = Math.min(0.1, t - last);
+      last = t;
+      if (focusAt < 0) focusAt = t;
+      const s = focus ? spots[focus] : undefined;
+      if (!s) {
+        // Autopilot: stand behind the counter and look around the shop.
+        const yaw = Math.sin((t * 2 * Math.PI) / 34) * 1.3;
+        const pitch = -0.12 + Math.sin((t * 2 * Math.PI) / 11) * 0.06;
+        aim(cam, Math.sin(t / 13) * 0.45, 1.55, 1.45, yaw, pitch);
+        pos.copy(cam.position);
+        cam.getWorldDirection(dir);
+        tgt.copy(pos).addScaledVector(dir, 3);
+        return;
+      }
+      wantTgt.copy(s.target);
+      if (s.sweep) {
+        // Pan ±36° across the wall (so a 50° sweep completes in ~5 s) and drift from the top shelf down.
+        const u = t - focusAt;
+        const pan = Math.sin((u * 2 * Math.PI) / 10) * 0.62;
+        dir.subVectors(s.target, s.pos).applyAxisAngle(new THREE.Vector3(0, 1, 0), pan);
+        wantTgt.copy(s.pos).add(dir);
+        wantTgt.y = s.target.y + 0.55 * Math.cos((u * 2 * Math.PI) / 20);
+      }
+      const k = 1 - Math.exp(-dt * 2.4);
+      pos.lerp(s.pos, k);
+      tgt.lerp(wantTgt, s.sweep ? 1 - Math.exp(-dt * 5) : k);
+      cam.position.set(pos.x, pos.y + Math.sin(t / 3) * 0.02, pos.z);
+      cam.lookAt(tgt);
     },
   };
 }

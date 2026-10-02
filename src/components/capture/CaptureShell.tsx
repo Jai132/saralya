@@ -12,13 +12,12 @@ import type { FrameEngine } from './engines/types';
 import { CaptureScript, CaptureStep } from '../../data/scripts';
 import { CHALLENGES, CHALLENGE_WINDOW_S, ChallengeDef, randomCode } from '../../data/challenges';
 import { useSettings } from '../../store/settings';
-import { CaptureMeta, EngineKind, useCaptures } from '../../store/captures';
+import { CaptureMeta, EngineKind } from '../../store/captures';
 import { detectCapabilities } from '../../lib/capabilities';
 import { CameraError } from '../../lib/camera';
 import { useGeo, useOrientationPose, Pose } from '../../lib/sensors';
 import { verdict as qualityVerdict, QualityVerdict } from '../../lib/quality';
-import { linkHash, sha256Hex } from '../../lib/hashchain';
-import { blobs } from '../../lib/storage';
+import { sealCapture, sealsSettled } from '../../lib/seal';
 
 export interface ChallengeResult {
   id: string;
@@ -50,6 +49,10 @@ export interface ShellState {
   points: number;
   captures: number;
   engine: EngineKind | null;
+  /** Latest feature analysis (tracks in analysis pixels, aw×ah), read on demand by animated overlays. */
+  analysis: () => Analysis | null;
+  /** Whether a sweep is currently recording. */
+  sweeping: boolean;
 }
 
 interface Props {
@@ -76,8 +79,6 @@ interface ActiveChallenge {
 export function CaptureShell({ script, appId, onDone, onExit, overlay, onCaptured }: Props) {
   const engineChoice = useSettings((s) => s.engine);
   const openSettings = useSettings((s) => s.openSettings);
-  const addCapture = useCaptures((s) => s.add);
-  const headOf = useCaptures((s) => s.head);
 
   const stageRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -208,48 +209,34 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
   // ————— Sealing —————
   const sealFrame = useCallback(
     (stepId: string, label: string, note?: string) => {
-      const run = async () => {
+      const job = (async () => {
         const eng = engineRef.current;
         if (!eng) return null;
         const a = latest.current;
         const g = geoRef.current;
         const { blob, width, height, overlayOnly } = await eng.capture();
-        const id = `cap_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
-        const ts = Date.now();
-        const imageHash = blob ? await sha256Hex(await blob.arrayBuffer()) : await sha256Hex(`${id}|${ts}|no-frame`);
-        const prevHash = headOf(appId);
-        const meta: Omit<CaptureMeta, 'hash'> = {
-          id,
+        const full = await sealCapture({
           appId,
           stepId,
           label,
-          ts,
-          lat: g.status === 'ok' ? g.lat : undefined,
-          lng: g.status === 'ok' ? g.lng : undefined,
-          accuracy: g.status === 'ok' ? Math.round(g.accuracy!) : undefined,
           engine: eng.kind,
-          brightness: Math.round(a?.quality.brightness ?? 0),
-          sharpness: Math.round(a?.quality.sharpness ?? 0),
+          blob,
           width,
           height,
-          imageHash,
-          prevHash,
-          blobId: blob ? id : undefined,
+          brightness: a?.quality.brightness,
+          sharpness: a?.quality.sharpness,
+          geo: g.status === 'ok' ? { lat: g.lat, lng: g.lng, accuracy: g.accuracy } : null,
           note: note ?? (!blob || overlayOnly ? 'camera frame unavailable in this mode' : undefined),
-        };
-        const hash = await linkHash(prevHash, imageHash, meta);
-        if (blob) await blobs.put(id, blob);
-        const full: CaptureMeta = { ...meta, hash };
-        addCapture(full);
-        captureIds.current.push(id);
-        setSeal((s) => ({ hash, count: s.count + 1, pulse: s.pulse + 1 }));
+        });
+        captureIds.current.push(full.id);
+        setSeal((s) => ({ hash: full.hash, count: s.count + 1, pulse: s.pulse + 1 }));
         return full;
-      };
-      const p = sealQueue.current.then(run, run);
-      sealQueue.current = p;
-      return p;
+      })();
+      // finish() waits on this so no frame still being grabbed is left out of the summary.
+      sealQueue.current = Promise.all([sealQueue.current, job]).catch(() => undefined);
+      return job;
     },
-    [appId, addCapture, headOf],
+    [appId],
   );
 
   // ————— Analysis loop: features, overlay, pose, coverage, mini-map, sweep —————
@@ -461,6 +448,7 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
 
   const finish = useCallback(async () => {
     await sealQueue.current;
+    await sealsSettled();
     onDone({
       captureIds: [...captureIds.current],
       challenges: [...challengeLog.current],
@@ -553,6 +541,8 @@ export function CaptureShell({ script, appId, onDone, onExit, overlay, onCapture
     points: hud.points,
     captures: seal.count,
     engine: engine.kind ?? null,
+    analysis: () => latest.current,
+    sweeping,
   };
   const elapsed = clock - startedAt.current;
   useEffect(() => {

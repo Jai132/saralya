@@ -77,9 +77,10 @@ Storage is browser-only: app state in `localStorage`, captured frames in Indexed
 | Feature-point detection on the live frame (FAST corners) | Registry pulls: DigiLocker RC, VAHAN, RoR, EC, CERSAI |
 | WebXR hit-test surfaces and depth point cloud (ARCore phones) | Device attestation, challenge verification, replay/injection scores |
 | 4-point homography calibration and perspective warp | Valuations, fraud scores, duplicate-index hits |
-| UPI QR decoding (`BarcodeDetector`, `jsQR` fallback) | Cross-view geolocalisation, parcel lookup, shadow floor count |
+| QR decoding with `jsQR`, plus parsing of UPI links, BharatQR (EMVCo) codes and GST e-invoice JWS payloads | Cross-view geolocalisation, parcel lookup, shadow floor count |
+| Stock boxes: feature points clustered into regions on the live frame | Item counts, stock categories, meter reading, payee-name verification |
 | GPS location with accuracy | Plan vectorisation and deviation schedule |
-| SHA-256 hash chain over captured frames (`crypto.subtle`) | Account Aggregator, GST e-invoice verification, penny drop |
+| SHA-256 hash chain over captured frames (`crypto.subtle`) | Account Aggregator, the IRP signature check on e-invoices, penny drop |
 | Image quality gating: brightness and Laplacian blur | The whole lender console (seeded data only) |
 
 Demo login: any 10-digit mobile number, OTP **123456**.

@@ -38,13 +38,22 @@ export const MSME_SCRIPT: CaptureScript = {
   demo: 'shop',
   challengePool: ['ceiling', 'code', 'carton', 'scale', 'hand'],
   steps: [
-    { id: 'frontage', title: 'Frontage & signboard', prompt: 'Stand outside and capture the shop front with the signboard readable', kind: 'photo', shots: 1 },
-    { id: 'counter', title: 'Counter & weighing scale', prompt: 'Show the counter and the weighing scale', kind: 'photo', shots: 1, challenge: 'random' },
-    { id: 'shelf-left', title: 'Left shelf wall', prompt: 'Slowly pan across the left shelf wall, top to bottom', kind: 'sweep', sweepDeg: 50 },
-    { id: 'shelf-back', title: 'Back shelf wall', prompt: 'Slowly pan across the back wall of shelves', kind: 'sweep', sweepDeg: 50, challenge: 'carton' },
-    { id: 'shelf-right', title: 'Right shelf wall', prompt: 'Slowly pan across the right shelf wall', kind: 'sweep', sweepDeg: 50 },
-    { id: 'storage', title: 'Back room / storage', prompt: 'Show the back room or wherever extra stock is kept', kind: 'photo', shots: 2, challenge: 'ceiling' },
+    { id: 'frontage', title: 'Frontage & signboard', prompt: 'Stand outside and capture the shop front with the signboard readable', kind: 'photo', shots: 1, focus: 'frontage' },
+    { id: 'counter', title: 'Counter & weighing scale', prompt: 'Show the counter and the weighing scale', kind: 'photo', shots: 1, focus: 'counter', challenge: 'code' },
+    { id: 'shelf-left', title: 'Left shelf wall', prompt: 'Slowly pan across the left shelf wall, top to bottom', kind: 'sweep', sweepDeg: 50, focus: 'shelf-left' },
+    { id: 'shelf-back', title: 'Back shelf wall', prompt: 'Slowly pan across the back wall of shelves', kind: 'sweep', sweepDeg: 50, focus: 'shelf-back', challenge: 'carton' },
+    { id: 'shelf-right', title: 'Right shelf wall', prompt: 'Slowly pan across the right shelf wall', kind: 'sweep', sweepDeg: 50, focus: 'shelf-right' },
+    { id: 'storage', title: 'Back room / storage', prompt: 'Show the back room or wherever extra stock is kept', kind: 'photo', shots: 2, focus: 'storage', challenge: 'ceiling' },
   ],
+};
+
+export const MSME_METER_SCRIPT: CaptureScript = {
+  id: 'msme-meter',
+  title: 'Electricity meter',
+  flow: 'msme',
+  demo: 'shop',
+  challengePool: [],
+  steps: [{ id: 'meter', title: 'Electricity meter', prompt: 'Fill the box with the meter so the kWh reading is sharp', kind: 'photo', shots: 1, focus: 'meter' }],
 };
 
 export const LAP_SCRIPT: CaptureScript = {
