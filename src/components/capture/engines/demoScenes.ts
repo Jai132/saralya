@@ -19,7 +19,9 @@ import {
   wallTexture,
   woodTexture,
   meterTexture,
+  planTexture,
 } from './demoTextures';
+import { PLAN_ROOMS } from '../../../data/property';
 import { GHOST_BOX, type DemoVariant } from './types';
 
 export interface DemoWorld {
@@ -224,7 +226,7 @@ function buildShop(): DemoWorld {
   for (let i = 0; i < 6; i++) box(scene, 0.42, 0.32, 0.36, carton, -2.25 + (i % 2) * 0.02, 0.16 + Math.floor(i / 2) * 0.33, -3.45 + (i % 2) * 0.44);
 
   // Per-step camera targets. Shelf walls are swept: the camera pans across the wall and tilts top to bottom.
-  const spots: Record<string, Spot & { sweep?: boolean }> = {
+  const spots: Record<string, RigSpot> = {
     frontage: { pos: v3(0, 1.6, 6.9), target: v3(0, 1.75, 2.3) },
     counter: { pos: v3(0.25, 1.7, 1.8), target: v3(0.95, 0.95, 0.3) },
     'shelf-left': { pos: v3(-0.3, 1.5, -1.1), target: v3(-2.9, 1.25, -1.2), sweep: true },
@@ -233,13 +235,39 @@ function buildShop(): DemoWorld {
     storage: { pos: v3(-1.0, 1.5, -1.0), target: v3(-2.3, 0.35, -2.6) },
     meter: { pos: v3(2.3, 1.82, 1.6), target: v3(3.0, 1.85, 1.6) },
   };
+  // Autopilot: stand behind the counter and look around the shop.
+  return focusRig(scene, spots, (t, cam) => {
+    const yaw = Math.sin((t * 2 * Math.PI) / 34) * 1.3;
+    const pitch = -0.12 + Math.sin((t * 2 * Math.PI) / 11) * 0.06;
+    aim(cam, Math.sin(t / 13) * 0.45, 1.55, 1.45, yaw, pitch);
+  });
+}
+
+interface RigSpot {
+  pos: THREE.Vector3;
+  target: THREE.Vector3;
+  /** Pan ±36° across the target (and drift top to bottom) — for sweep steps. */
+  sweep?: boolean;
+  /** Follow the scene's autopilot (eased in from wherever the camera is) — for walk-through sweeps. */
+  auto?: boolean;
+}
+
+/**
+ * Camera rig for scenes with per-step targets: with no focus (or an `auto` spot) it follows the autopilot;
+ * otherwise it eases to the spot's pose and holds, or pans across it for sweeps.
+ */
+function focusRig(scene: THREE.Scene, spots: Record<string, RigSpot>, autopilot: (t: number, cam: THREE.PerspectiveCamera) => void): DemoWorld {
   let focus: string | null = null;
   let focusAt = 0;
   let last = 0;
-  const pos = v3(0, 1.55, 1.45);
-  const tgt = v3(0, 1.4, -2);
+  let started = false;
+  const pos = new THREE.Vector3();
+  const tgt = new THREE.Vector3();
+  const wantPos = new THREE.Vector3();
   const wantTgt = new THREE.Vector3();
   const dir = new THREE.Vector3();
+  const up = new THREE.Vector3(0, 1, 0);
+  const ghost = new THREE.PerspectiveCamera();
 
   return {
     scene,
@@ -252,28 +280,32 @@ function buildShop(): DemoWorld {
       last = t;
       if (focusAt < 0) focusAt = t;
       const s = focus ? spots[focus] : undefined;
-      if (!s) {
-        // Autopilot: stand behind the counter and look around the shop.
-        const yaw = Math.sin((t * 2 * Math.PI) / 34) * 1.3;
-        const pitch = -0.12 + Math.sin((t * 2 * Math.PI) / 11) * 0.06;
-        aim(cam, Math.sin(t / 13) * 0.45, 1.55, 1.45, yaw, pitch);
-        pos.copy(cam.position);
-        cam.getWorldDirection(dir);
-        tgt.copy(pos).addScaledVector(dir, 3);
-        return;
+      if (!s || s.auto) {
+        autopilot(t, ghost);
+        ghost.getWorldDirection(dir);
+        wantPos.copy(ghost.position);
+        wantTgt.copy(ghost.position).addScaledVector(dir, 3);
+      } else {
+        wantPos.copy(s.pos);
+        wantTgt.copy(s.target);
+        if (s.sweep) {
+          const u = t - focusAt;
+          const pan = Math.sin((u * 2 * Math.PI) / 10) * 0.62;
+          dir.subVectors(s.target, s.pos).applyAxisAngle(up, pan);
+          wantTgt.copy(s.pos).add(dir);
+          wantTgt.y = s.target.y + 0.55 * Math.cos((u * 2 * Math.PI) / 20);
+        }
       }
-      wantTgt.copy(s.target);
-      if (s.sweep) {
-        // Pan ±36° across the wall (so a 50° sweep completes in ~5 s) and drift from the top shelf down.
-        const u = t - focusAt;
-        const pan = Math.sin((u * 2 * Math.PI) / 10) * 0.62;
-        dir.subVectors(s.target, s.pos).applyAxisAngle(new THREE.Vector3(0, 1, 0), pan);
-        wantTgt.copy(s.pos).add(dir);
-        wantTgt.y = s.target.y + 0.55 * Math.cos((u * 2 * Math.PI) / 20);
+      if (!started || (!s && t - focusAt > 4)) {
+        // Plain autopilot (or the first frame): follow exactly.
+        started = true;
+        pos.copy(wantPos);
+        tgt.copy(wantTgt);
+      } else {
+        const k = 1 - Math.exp(-dt * 3.2);
+        pos.lerp(wantPos, k);
+        tgt.lerp(wantTgt, s?.sweep || s?.auto ? 1 - Math.exp(-dt * 5) : k);
       }
-      const k = 1 - Math.exp(-dt * 2.4);
-      pos.lerp(s.pos, k);
-      tgt.lerp(wantTgt, s.sweep ? 1 - Math.exp(-dt * 5) : k);
       cam.position.set(pos.x, pos.y + Math.sin(t / 3) * 0.02, pos.z);
       cam.lookAt(tgt);
     },
@@ -379,16 +411,48 @@ function buildHouse(): DemoWorld {
   fan(scene, -2, 0);
   fan(scene, 2, 0);
 
-  return {
-    scene,
-    update(t, cam) {
-      const s = 0.5 - 0.5 * Math.cos((t * 2 * Math.PI) / 52);
-      const x = -2.2 + 4.4 * s;
-      const z = 1.3 - 1.3 * Math.sin(Math.PI * s);
-      const yaw = Math.sin((t * 2 * Math.PI) / 17) * 1.45;
-      aim(cam, x, 1.5, z, yaw, -0.1 + Math.sin(t / 5) * 0.05);
-    },
+  // The sanctioned plan, lying on the study table.
+  plane(scene, 0.6, 0.42, std({ map: planTexture(PLAN_ROOMS) }), [1.0, 0.762, 2.5], [-Math.PI / 2, 0, Math.PI]);
+
+  // ——— Outside: plot, road, compound wall, outer walls and roof. ———
+  plane(scene, 40, 40, std({ map: tileTexture('#6b8e4e', '#5f7f45', 10, [8, 8]) }), [0, -0.02, 0], [-Math.PI / 2, 0, 0]);
+  plane(scene, 40, 5, std({ map: concreteTexture([10, 1]) }), [0, -0.01, 9], [-Math.PI / 2, 0, 0]);
+  plane(scene, 2.2, 3, std({ map: tileTexture('#cbd5e1', '#b8c2cf', 4, [1, 2]) }), [-2.1, -0.012, 4.5], [-Math.PI / 2, 0, 0]);
+  const compound = std({ map: wallTexture('#e2d6c2', [2, 1]) });
+  box(scene, 3, 1.1, 0.2, compound, -4.6, 0.55, 6.2);
+  box(scene, 5, 1.1, 0.2, compound, 1.5, 0.55, 6.2);
+  box(scene, 0.2, 1.1, 11, compound, -6.1, 0.55, 0.7);
+  box(scene, 0.2, 1.1, 11, compound, 4.1 + 2, 0.55, 0.7);
+  const outer = std({ map: wallTexture('#f1e4c8', [3, 1]) });
+  plane(scene, 6.24, H + 0.3, outer, [-4.07, (H + 0.3) / 2, 0], [0, -Math.PI / 2, 0]);
+  plane(scene, 6.24, H + 0.3, outer, [4.07, (H + 0.3) / 2, 0], [0, Math.PI / 2, 0]);
+  const slab = std({ map: concreteTexture([3, 2]) });
+  box(scene, 8.4, 0.2, 6.4, slab, 0, H + 0.11, 0);
+  for (const [w, d, x, z] of [[8.4, 0.12, 0, 3.14], [8.4, 0.12, 0, -3.14], [0.12, 6.4, 4.14, 0], [0.12, 6.4, -4.14, 0]] as const)
+    box(scene, w, 0.6, d, outer, x, H + 0.5, z);
+  const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.1, 20), std({ color: 0x111827, roughness: 0.5 }));
+  tank.position.set(2.6, H + 0.76, -1.8);
+  scene.add(tank);
+
+  const spots: Record<string, RigSpot> = {
+    road: { pos: v3(10, 1.8, 10.5), target: v3(-1.5, 1.4, 4) },
+    frontage: { pos: v3(-0.3, 2.0, 17.5), target: v3(-0.3, 1.6, 3) },
+    'elev-east': { pos: v3(12, 2.1, 1.5), target: v3(4, 1.5, 0) },
+    'elev-west': { pos: v3(-12, 2.1, -1.5), target: v3(-4, 1.5, 0) },
+    roof: { pos: v3(3.2, 5.4, 6.5), target: v3(0, H, -0.5) },
+    interior: { pos: v3(0, 1.5, 0), target: v3(0, 1.5, -1), auto: true },
+    meter: { pos: v3(-0.9, 1.6, 2.1), target: v3(-0.9, 1.62, 2.9) },
+    doorplate: { pos: v3(-2.85, 1.55, 3.95), target: v3(-2.85, 1.55, 3.07) },
+    plan: { pos: v3(1.0, 1.4, 2.12), target: v3(1.0, 0.76, 2.5) },
   };
+  // Autopilot: walk slowly through both rooms, panning each wall.
+  return focusRig(scene, spots, (t, cam) => {
+    const s = 0.5 - 0.5 * Math.cos((t * 2 * Math.PI) / 52);
+    const x = -2.2 + 4.4 * s;
+    const z = 1.3 - 1.3 * Math.sin(Math.PI * s);
+    const yaw = Math.sin((t * 2 * Math.PI) / 17) * 1.45;
+    aim(cam, x, 1.5, z, yaw, -0.1 + Math.sin(t / 5) * 0.05);
+  });
 }
 
 // ————————————————————————————— Vehicles —————————————————————————————

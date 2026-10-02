@@ -428,3 +428,41 @@ export function meterTexture(kwh: string) {
     g.fillText('240V  5-30A  50Hz', w / 2, 262);
   });
 }
+
+/** A sanctioned building plan sheet: blue-line rooms with labels, dimensions and an approval stamp. */
+export function planTexture(rooms: { name: string; x: number; y: number; w: number; h: number }[]) {
+  return tex('plan', 512, 360, (g, w, h) => {
+    g.fillStyle = '#f8fafc';
+    g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#1e3a8a';
+    g.fillStyle = '#1e3a8a';
+    g.lineWidth = 2;
+    g.strokeRect(8, 8, w - 16, h - 16);
+    const s = 30;
+    const ox = 40;
+    const oy = 300;
+    g.lineWidth = 4;
+    for (const r of rooms) g.strokeRect(ox + r.x * s, oy - (r.y + r.h) * s, r.w * s, r.h * s);
+    g.font = 'bold 13px Arial';
+    g.textAlign = 'center';
+    for (const r of rooms) g.fillText(r.name.toUpperCase(), ox + (r.x + r.w / 2) * s, oy - (r.y + r.h / 2) * s + 4);
+    g.font = '11px Arial';
+    g.fillText('7.00 M', ox + 4.5 * s, oy + 18);
+    g.textAlign = 'left';
+    g.font = 'bold 14px Arial';
+    g.fillText('GROUND FLOOR PLAN', 300, 50);
+    g.font = '11px Arial';
+    g.fillText('PLOT 9.0 x 15.0 M · SCALE 1:100', 300, 68);
+    g.strokeStyle = '#b91c1c';
+    g.fillStyle = '#b91c1c';
+    g.lineWidth = 2;
+    g.beginPath();
+    g.arc(410, 250, 44, 0, Math.PI * 2);
+    g.stroke();
+    g.textAlign = 'center';
+    g.font = 'bold 12px Arial';
+    g.fillText('APPROVED', 410, 247);
+    g.font = '9px Arial';
+    g.fillText('DEMO AUTHORITY', 410, 262);
+  });
+}

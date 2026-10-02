@@ -63,12 +63,24 @@ export const LAP_SCRIPT: CaptureScript = {
   demo: 'house',
   challengePool: ['door', 'meter', 'code', 'ceiling'],
   steps: [
-    { id: 'road', title: 'Approach road', prompt: 'Capture the road leading to the property', kind: 'photo', shots: 1 },
-    { id: 'frontage', title: 'Frontage', prompt: 'Capture the full front of the building', kind: 'photo', shots: 1 },
-    { id: 'elevations', title: 'Side elevations', prompt: 'Walk around and capture each accessible side', kind: 'photo', shots: 2 },
-    { id: 'interior', title: 'Room-by-room interior', prompt: 'Walk slowly through every room, panning each wall', kind: 'sweep', sweepDeg: 160, challenge: 'door' },
-    { id: 'meter', title: 'Electricity meter & doorplate', prompt: 'Show the electricity meter, then the doorplate', kind: 'photo', shots: 2, challenge: 'meter' },
+    { id: 'road', title: 'Approach road', prompt: 'Capture the road leading to the property', kind: 'photo', shots: 1, focus: 'road' },
+    { id: 'frontage', title: 'Frontage', prompt: 'Stand back and capture the full front of the building', kind: 'photo', shots: 1, focus: 'frontage' },
+    { id: 'elev-east', title: 'Side elevation (right)', prompt: 'Walk to the right side and capture that wall', kind: 'photo', shots: 1, focus: 'elev-east' },
+    { id: 'elev-west', title: 'Side elevation (left)', prompt: 'Now the left side, if you can reach it', kind: 'photo', shots: 1, focus: 'elev-west' },
+    { id: 'roof', title: 'Roof', prompt: 'If it’s safe, capture the roof from the stairs or terrace', kind: 'photo', shots: 1, focus: 'roof' },
+    { id: 'interior', title: 'Room-by-room interior', prompt: 'Walk slowly through every room, panning each wall', kind: 'sweep', sweepDeg: 160, focus: 'interior', challenge: 'door' },
+    { id: 'meter', title: 'Electricity meter', prompt: 'Capture the electricity meter', kind: 'photo', shots: 1, focus: 'meter', challenge: 'meter' },
+    { id: 'doorplate', title: 'Doorplate', prompt: 'Capture the house number or doorplate', kind: 'photo', shots: 1, focus: 'doorplate' },
   ],
+};
+
+export const LAP_PLAN_SCRIPT: CaptureScript = {
+  id: 'lap-plan',
+  title: 'Sanctioned plan',
+  flow: 'lap',
+  demo: 'house',
+  challengePool: [],
+  steps: [{ id: 'plan', title: 'Sanctioned plan', prompt: 'Lay the sanctioned plan flat and fill the box with it', kind: 'photo', shots: 1, focus: 'plan' }],
 };
 
 const ANGLES = ['Front', 'Front-¾ left', 'Left side', 'Rear-¾ left', 'Rear', 'Rear-¾ right', 'Right side', 'Front-¾ right'];

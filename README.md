@@ -79,7 +79,7 @@ Storage is browser-only: app state in `localStorage`, captured frames in Indexed
 | 4-point homography calibration and perspective warp | Valuations, fraud scores, duplicate-index hits |
 | QR decoding with `jsQR`, plus parsing of UPI links, BharatQR (EMVCo) codes and GST e-invoice JWS payloads | Cross-view geolocalisation, parcel lookup, shadow floor count |
 | Stock boxes: feature points clustered into regions on the live frame | Item counts, stock categories, meter reading, payee-name verification |
-| GPS location with accuracy | Plan vectorisation and deviation schedule |
+| GPS location with accuracy, on an Esri satellite map | Plan vectorisation, deviation schedule, live floor-plan sketch and area ticker |
 | SHA-256 hash chain over captured frames (`crypto.subtle`) | Account Aggregator, the IRP signature check on e-invoices, penny drop |
 | Image quality gating: brightness and Laplacian blur | The whole lender console (seeded data only) |
 
