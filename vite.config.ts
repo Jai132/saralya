@@ -15,6 +15,7 @@ export default defineConfig(({ command, mode }) => ({
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         house_model: fileURLToPath(new URL('./house_model.html', import.meta.url)),
+        pharmacy_store: fileURLToPath(new URL('./pharmacy_store.html', import.meta.url)),
       },
     },
   },

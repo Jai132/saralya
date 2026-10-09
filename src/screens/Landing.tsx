@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Settings, Smartphone, LayoutDashboard, ShieldCheck, Link2, Ruler, GitCompare, RefreshCw, ScanLine, Box, ArrowRight } from 'lucide-react';
+import { Settings, Smartphone, LayoutDashboard, ShieldCheck, Link2, Ruler, GitCompare, RefreshCw, ScanLine, Box, Pill, ArrowRight } from 'lucide-react';
 import { Wordmark } from '../components/Logo';
 import { Button } from '../components/ui';
 import { useSettings } from '../store/settings';
@@ -11,6 +11,11 @@ const layers = [
   { n: 4, t: 'Measure', s: 'ranges with confidence', icon: Ruler },
   { n: 5, t: 'Reconcile', s: 'data you can’t stage', icon: GitCompare },
   { n: 6, t: 'Lifecycle', s: 'monitor, recover, reuse', icon: RefreshCw },
+];
+
+const showcases = [
+  { page: 'house_model.html', t: 'House model — 3D walkaround reconstruction', icon: Box },
+  { page: 'pharmacy_store.html', t: 'Pharmacy store — shelf-by-shelf capture', icon: Pill },
 ];
 
 export default function Landing() {
@@ -77,17 +82,22 @@ export default function Landing() {
             Immutable evidence store · hash-chained media · every number links to a frame or a signed record
           </div>
 
-          <a
-            href={`${import.meta.env.BASE_URL}house_model.html`}
-            className="group mt-6 flex items-center gap-3 self-start rounded-xl border border-teal-light/25 bg-white/[0.04] px-4 py-3 transition hover:border-teal-light/60 hover:bg-white/[0.08]"
-          >
-            <Box className="h-5 w-5 shrink-0 text-teal-light" />
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-light">Showcase</div>
-              <div className="text-[14px] font-semibold">House model — 3D walkaround reconstruction</div>
-            </div>
-            <ArrowRight className="ml-2 h-4 w-4 text-white/50 transition group-hover:translate-x-0.5 group-hover:text-white" />
-          </a>
+          <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
+            {showcases.map((s) => (
+              <a
+                key={s.page}
+                href={`${import.meta.env.BASE_URL}${s.page}`}
+                className="group flex items-center gap-3 rounded-xl border border-teal-light/25 bg-white/[0.04] px-4 py-3 transition hover:border-teal-light/60 hover:bg-white/[0.08]"
+              >
+                <s.icon className="h-5 w-5 shrink-0 text-teal-light" />
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-light">Showcase</div>
+                  <div className="text-[14px] font-semibold">{s.t}</div>
+                </div>
+                <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-white/50 transition group-hover:translate-x-0.5 group-hover:text-white sm:ml-2" />
+              </a>
+            ))}
+          </div>
         </main>
 
         <footer className="text-center text-[11px] text-white/40">

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0B1B34" />
+    <title>pharmacy_store</title>
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%icons/icon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" src="/src/pharmacy_store.ts"></script>
+  </head>
+  <body>
+    <!-- Header band: same navy + wordmark as the landing page -->
+    <div class="bg-navy text-white">
+      <div class="mx-auto max-w-3xl px-5 pb-12 pt-[max(env(safe-area-inset-top),20px)]">
+        <header class="flex items-center justify-between py-3">
+          <a href="%BASE_URL%" class="flex items-center gap-2.5" aria-label="Saralya home">
+            <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
+              <rect width="64" height="64" rx="16" fill="#ffffff" />
+              <circle cx="32" cy="32" r="17" fill="none" stroke="#14b8a6" stroke-width="5" stroke-dasharray="88 20" stroke-linecap="round" transform="rotate(-50 32 32)" />
+              <circle cx="32" cy="32" r="6.5" fill="#0B1B34" />
+              <circle cx="46.5" cy="19" r="3.2" fill="#C2410C" />
+            </svg>
+            <span class="font-serif text-xl font-semibold tracking-tight text-white">Saralya</span>
+          </a>
+          <a href="%BASE_URL%" class="rounded-full px-3 py-1.5 text-[13px] text-white/70 transition hover:bg-white/10 hover:text-white">
+            &larr; Back to app
+          </a>
+        </header>
+
+        <div class="pt-8 md:pt-12">
+          <div class="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-light">Showcase · MSME capture</div>
+          <h1 class="max-w-2xl font-serif text-[32px] font-semibold leading-[1.12] text-white md:text-[44px]">
+            A pharmacy store, showcased shelf by shelf
+          </h1>
+          <p class="mt-4 max-w-xl text-[15px] leading-relaxed text-white/70 md:text-base">
+            12 minute phone capture - Showcases the product shelf by shelf - Geometrically accurate.
+          </p>
+          <div class="mt-5 text-[12px] text-white/50">Jai Tyagi · 9 October 2026 · 4 min read</div>
+        </div>
+      </div>
+    </div>
+
+    <main class="mx-auto max-w-3xl px-5 py-10">
+      <article class="space-y-8 text-[15px] leading-relaxed text-ink-soft md:text-base">
+        <p>
+          For MSMEs, the aim was to provide a structurally coherent representation of their inventory and operations with a floor plan; the procedure and methodology followed was the same as that for the house model.
+        </p>
+
+        <section>
+          <p class="mb-4">A quick breakdown of the pipeline:</p>
+          <ol class="space-y-4">
+            <li class="flex gap-3">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-tint text-[13px] font-semibold text-teal">1</span>
+              <div>
+                <div class="font-semibold text-navy">Data capture</div>
+                <p>
+                  Capture a series of images and videos of the shop on a smartphone by walking along a planned path.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-tint text-[13px] font-semibold text-teal">2</span>
+              <div>
+                <div class="font-semibold text-navy">Structure-from-Motion (SfM)</div>
+                <p>
+                  The captured footage is processed with photogrammetry software, which analyzes the images and extracts key
+                  features to build a 3D point cloud.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-tint text-[13px] font-semibold text-teal">3</span>
+              <div>
+                <div class="font-semibold text-navy">3D reconstruction</div>
+                <p>
+                  The point cloud is used to build a detailed 3D model of the shop, reconstructing its geometry and textures into a realistic representation.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-tint text-[13px] font-semibold text-teal">4</span>
+              <div>
+                <div class="font-semibold text-navy">Interactive visualization</div>
+                <p>Finally, the model is prepared for interactive viewing, so anyone can explore it from any angle.</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <!-- 3D model -->
+        <figure>
+          <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+            <iframe
+              id="viewer"
+              width="800"
+              height="500"
+              allow="fullscreen; xr-spatial-tracking"
+              src="https://superspl.at/s?id=657e0a09"
+              title="Interactive 3D model of the pharmacy store"
+              class="block aspect-[8/5] h-auto w-full"
+            ></iframe>
+          </div>
+          <figcaption class="mt-2 text-[13px] text-ink-faint"></figcaption>
+        </figure>
+
+        <section>
+          <h2 class="mb-3 text-[22px] font-semibold leading-tight">Shop Structure</h2>
+          <p>
+            Here the processed SfM point cloud is used to generate a geometric representation of the house's layout. The orange frames are called view frustums that depict where the camera was positioned during the capture. As such, they provide context for understanding the 3D model's perspective. A top view or an orthophoto of this layout helps visualize the space and floor plan more effectively.
+          </p>
+        </section>
+
+        <figure>
+          <div class="overflow-hidden rounded-2xl border border-line bg-navy shadow-card">
+            <video
+              src="%BASE_URL%pharmacy_store/shop_structure.mp4"
+              controls
+              playsinline
+              preload="metadata"
+              class="block h-auto w-full"
+            ></video>
+          </div>
+          <figcaption class="mt-2 text-[13px] text-ink-faint">Shop structure.</figcaption>
+        </figure>
+
+        <section>
+          <h2 class="mb-3 text-[22px] font-semibold leading-tight">Stock and Interior</h2>
+          <p>
+            The stock and interior layout of the store can be effectively audited by visualizing the gaussian model resulting from the point cloud's processing. Here, the capture method was same as that of the house model, a good structural coherence can be observed here with decent detail of the stock, this quality however can be further improved with more photos taken from different angles.
+          </p>
+        </section>
+
+        <figure>
+          <div class="overflow-hidden rounded-2xl border border-line bg-navy shadow-card">
+            <video
+              src="%BASE_URL%pharmacy_store/shop_gaussian_scene.mp4"
+              controls
+              playsinline
+              preload="metadata"
+              class="block h-auto w-full"
+            ></video>
+          </div>
+          <figcaption class="mt-2 text-[13px] text-ink-faint">Gaussian splat of the shop interior and stock.</figcaption>
+        </figure>
+
+      </article>
+    </main>
+
+    <footer class="pb-8 text-center text-[11px] text-ink-faint">Prototype for demonstration · Jai Tyagi</footer>
+  </body>
+</html>
