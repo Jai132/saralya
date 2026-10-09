@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0B1B34" />
+    <title>house_model</title>
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%icons/icon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" src="/src/house_model.ts"></script>
+  </head>
+  <body>
+    <!-- Header band: same navy + wordmark as the landing page -->
+    <div class="bg-navy text-white">
+      <div class="mx-auto max-w-3xl px-5 pb-12 pt-[max(env(safe-area-inset-top),20px)]">
+        <header class="flex items-center justify-between py-3">
+          <a href="%BASE_URL%" class="flex items-center gap-2.5" aria-label="Saralya home">
+            <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
+              <rect width="64" height="64" rx="16" fill="#ffffff" />
+              <circle cx="32" cy="32" r="17" fill="none" stroke="#14b8a6" stroke-width="5" stroke-dasharray="88 20" stroke-linecap="round" transform="rotate(-50 32 32)" />
+              <circle cx="32" cy="32" r="6.5" fill="#0B1B34" />
+              <circle cx="46.5" cy="19" r="3.2" fill="#C2410C" />
+            </svg>
+            <span class="font-serif text-xl font-semibold tracking-tight text-white">Saralya</span>
+          </a>
+          <a href="%BASE_URL%" class="rounded-full px-3 py-1.5 text-[13px] text-white/70 transition hover:bg-white/10 hover:text-white">
+            &larr; Back to app
+          </a>
+        </header>
+
+        <div class="pt-8 md:pt-12">
+          <div class="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-light">Showcase · Property capture</div>
+          <h1 class="max-w-2xl font-serif text-[32px] font-semibold leading-[1.12] text-white md:text-[44px]">
+            A house, reconstructed from a walkaround
+          </h1>
+          <p class="mt-4 max-w-xl text-[15px] leading-relaxed text-white/70 md:text-base">
+            10 mins to capture - High quality visuals for auditing - All from a common android smartphone.
+          </p>
+          <div class="mt-5 text-[12px] text-white/50">Jai Tyagi · 9 October 2026 · 4 min read</div>
+        </div>
+      </div>
+    </div>
+
+    <main class="mx-auto max-w-3xl px-5 py-10">
+      <article class="space-y-8 text-[15px] leading-relaxed text-ink-soft md:text-base">
+        <p>
+          The aim was to create a high-fidelity 3D model of a house using only a smartphone, one that could be used for auditing
+          and for drawing up floor plans quickly and efficiently. To accomplish this, a combination of photogrammetry and
+          3D reconstruction techniques were used. The result is a detailed, accurate representation of the house that can be explored
+          interactively.
+        </p>
+
+        <section>
+          <p class="mb-4">A quick breakdown of the pipeline:</p>
+          <ol class="space-y-4">
+            <li class="flex gap-3">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-tint text-[13px] font-semibold text-teal">1</span>
+              <div>
+                <div class="font-semibold text-navy">Data capture</div>
+                <p>
+                  Capture a series of images and videos of the house on a smartphone by walking around the property along a
+                  planned path. Through trial and error, I found that a spiral path captures detail most effectively without
+                  wasting time.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-tint text-[13px] font-semibold text-teal">2</span>
+              <div>
+                <div class="font-semibold text-navy">Structure-from-Motion (SfM)</div>
+                <p>
+                  The captured footage is processed with photogrammetry software, which analyzes the images and extracts key
+                  features to build a 3D point cloud.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-tint text-[13px] font-semibold text-teal">3</span>
+              <div>
+                <div class="font-semibold text-navy">3D reconstruction</div>
+                <p>
+                  The point cloud is used to build a detailed 3D model of the house, reconstructing its geometry and textures
+                  into a realistic representation.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-tint text-[13px] font-semibold text-teal">4</span>
+              <div>
+                <div class="font-semibold text-navy">Interactive visualization</div>
+                <p>Finally, the model is prepared for interactive viewing, so anyone can explore it from any angle.</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <!-- 3D model -->
+        <figure>
+          <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+            <iframe
+              id="viewer"
+              width="800"
+              height="500"
+              allow="fullscreen; xr-spatial-tracking"
+              src="https://superspl.at/s?id=ea9275a0"
+              title="Interactive 3D model of the house"
+              class="block aspect-[8/5] h-auto w-full"
+            ></iframe>
+          </div>
+          <figcaption class="mt-2 text-[13px] text-ink-faint">Please note that SuperSplat is for demonstration purposes only and it compresses the file by more than 90% that causes the quality to be significantly reduced. However please checkout the below supplemented resources for better viewing</figcaption>
+        </figure>
+
+        <section>
+          <h2 class="mb-3 text-[22px] font-semibold leading-tight">Floor Plans</h2>
+          <p>
+            Here the processed SfM point cloud is used to generate a geometric representation of the house's layout.
+            The orange frames are called view frustums that depict where the camera was positioned during the capture. As such, they provide context for understanding the 3D model's perspective. A top view or an orthophoto of this layout helps visualize the space and floor plan more effectively.
+          </p>
+        </section>
+
+        <figure>
+          <div class="overflow-hidden rounded-2xl border border-line bg-navy shadow-card">
+            <video
+              src="%BASE_URL%house_model/point_cloud_floor_plan.mp4"
+              controls
+              playsinline
+              preload="metadata"
+              class="block h-auto w-full"
+            ></video>
+          </div>
+          <figcaption class="mt-2 text-[13px] text-ink-faint">Point cloud to floor plan.</figcaption>
+        </figure>
+
+        <figure>
+          <div class="overflow-hidden rounded-2xl border border-line bg-navy shadow-card">
+            <video
+              src="%BASE_URL%house_model/with_parallax.mp4"
+              controls
+              playsinline
+              preload="metadata"
+              class="block h-auto w-full"
+            ></video>
+          </div>
+          <figcaption class="mt-2 text-[13px] text-ink-faint">With parallax.</figcaption>
+        </figure>
+
+        <section>
+          <h2 class="mb-3 text-[22px] font-semibold leading-tight">High Quality visuals for auditing</h2>
+          <p>
+            Here the point cloud is further processed to generate a high-quality visual representation of the house using 3D Gaussian Splatting. The resulting visuals can be used for auditing purposes, allowing for a detailed examination of the property without the need for physical presence.
+            consectetur ac, vestibulum at eros. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh.
+          </p>
+        </section>
+
+        <figure>
+          <div class="overflow-hidden rounded-2xl border border-line bg-navy shadow-card">
+            <video
+              src="%BASE_URL%house_model/gsplat_living_room.mp4"
+              controls
+              playsinline
+              preload="metadata"
+              class="block h-auto w-full"
+            ></video>
+          </div>
+          <figcaption class="mt-2 text-[13px] text-ink-faint">Gaussian splat of hall and kitchen.</figcaption>
+        </figure>
+
+        <figure>
+          <div class="overflow-hidden rounded-2xl border border-line bg-navy shadow-card">
+            <video
+              src="%BASE_URL%house_model/gsplat_another_perspective.mp4"
+              controls
+              playsinline
+              preload="metadata"
+              class="block h-auto w-full"
+            ></video>
+          </div>
+          <figcaption class="mt-2 text-[13px] text-ink-faint">Another room and hall.</figcaption>
+        </figure>
+
+        <p>
+          To get the above results, 10 minutes of video taking at 30 fps was used. From this, 2-3 of the sharpest frames per second were extracted for processing. The whole procedure from data processing till point cloud generation was completed in 1.5 hours. To get the gaussian splatting models an additional short training of 40 minutes was done.
+        </p>
+      </article>
+    </main>
+
+    <footer class="pb-8 text-center text-[11px] text-ink-faint">Prototype for demonstration · Jai Tyagi</footer>
+  </body>
+</html>

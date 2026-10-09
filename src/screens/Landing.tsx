@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Settings, Smartphone, LayoutDashboard, ShieldCheck, Link2, Ruler, GitCompare, RefreshCw, ScanLine } from 'lucide-react';
+import { Settings, Smartphone, LayoutDashboard, ShieldCheck, Link2, Ruler, GitCompare, RefreshCw, ScanLine, Box, ArrowRight } from 'lucide-react';
 import { Wordmark } from '../components/Logo';
 import { Button } from '../components/ui';
 import { useSettings } from '../store/settings';
@@ -76,6 +76,18 @@ export default function Landing() {
           <div className="mt-2.5 rounded-lg bg-white/[0.06] px-3 py-2 text-center text-[11px] text-white/60">
             Immutable evidence store · hash-chained media · every number links to a frame or a signed record
           </div>
+
+          <a
+            href={`${import.meta.env.BASE_URL}house_model.html`}
+            className="group mt-6 flex items-center gap-3 self-start rounded-xl border border-teal-light/25 bg-white/[0.04] px-4 py-3 transition hover:border-teal-light/60 hover:bg-white/[0.08]"
+          >
+            <Box className="h-5 w-5 shrink-0 text-teal-light" />
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-light">Showcase</div>
+              <div className="text-[14px] font-semibold">House model — 3D walkaround reconstruction</div>
+            </div>
+            <ArrowRight className="ml-2 h-4 w-4 text-white/50 transition group-hover:translate-x-0.5 group-hover:text-white" />
+          </a>
         </main>
 
         <footer className="text-center text-[11px] text-white/40">
